@@ -1,3 +1,9 @@
+## Implementation of AI-Driven Resource Allocation for DC Ambal's Construction projects
+
+![Screenshot](images/screenshot.png)
+
+This project leverages the power of AI and GPT-4 to revolutionize construction project management. It features a user-friendly dashboard with drag-and-drop functionality, integrated with an automatic AI Assistant. Users can select specific projects to view detailed information, receive AI-generated recommendations, and access GPT-based prescriptive analysis for optimal decision-making and enhanced project efficiency.
+
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
 ## Getting Started
@@ -15,9 +21,6 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
 ## Learn More
@@ -34,3 +37,15 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+
+## Structure
+
+- page.tsx[Handles Main Page]
+- api/generateSummary(FOR COMMUNICATION WITH GPT)
+- components[Folder for Web Components]
+- lib[Folder for libraries]
+- store[Folder for stores]
+- boardStore.ts yung main Store (Dito maglalagay ng functions)
+- Add user defined interface / types sa _typings.d.ts_
+
+If may idadagdag paalam muna bago push
