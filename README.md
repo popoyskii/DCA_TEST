@@ -37,11 +37,12 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 
 
 ## Structure
-page.tsx[Handles Main Page]
-api/generateSummary(FOR COMMUNICATION WITH GPT)
-components[Folder for Web Components]
-lib[Folder for libraries]
-store[Folder for stores]
-# boardStore.ts yung main Store (Dito maglalagay ng functions)
-# Add user defined interface / types sa 
-## -- typings.d.ts --
+- page.tsx[Handles Main Page]
+- api/generateSummary(FOR COMMUNICATION WITH GPT)
+- components[Folder for Web Components]
+- lib[Folder for libraries]
+- store[Folder for stores]
+- boardStore.ts yung main Store (Dito maglalagay ng functions)
+- Add user defined interface / types sa *typings.d.ts*
+
+If may idadagdag paalam muna bago push
