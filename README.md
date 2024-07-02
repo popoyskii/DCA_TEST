@@ -1,6 +1,10 @@
 ## Implementation of AI-Driven Resource Allocation for DC Ambal's Construction projects
 
+<<<<<<< HEAD
 ![Screenshot](images/screenshot.png)
+=======
+![Screenshot](https://i.imgur.com/lm8KGHE.png)
+>>>>>>> f52af70911cc43fa40890ec6ec7c80fe6f20557e
 
 This project leverages the power of AI and GPT-4 to revolutionize construction project management. It features a user-friendly dashboard with drag-and-drop functionality, integrated with an automatic AI Assistant. Users can select specific projects to view detailed information, receive AI-generated recommendations, and access GPT-based prescriptive analysis for optimal decision-making and enhanced project efficiency.
 
@@ -23,6 +27,20 @@ bun dev
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
 
+## Structure
+- page.tsx[Handles Main Page]
+- api/generateSummary(FOR COMMUNICATION WITH GPT)
+- components[Folder for Web Components]
+- lib[Folder for libraries]
+- store[Folder for stores]
+- boardStore.ts yung main Store (Dito maglalagay ng functions)
+- Add user defined interface / types sa *typings.d.ts*
+
+If may idadagdag paalam muna bago push
+
+## Authors
+© Matthew Soriano, JC Guevarra, Jan Coscolluela, Rob Geronimo
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
@@ -38,6 +56,7 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 
+<<<<<<< HEAD
 ## Structure
 
 - page.tsx[Handles Main Page]
@@ -49,3 +68,5 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 - Add user defined interface / types sa _typings.d.ts_
 
 If may idadagdag paalam muna bago push
+=======
+>>>>>>> f52af70911cc43fa40890ec6ec7c80fe6f20557e
