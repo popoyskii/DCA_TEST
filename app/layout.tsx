@@ -1,6 +1,8 @@
 import Modal from "@/components/Modal";
 import "./globals.css";
 import ChartModal from "@/components/ChartModal";
+import LoginModal from "@/components/LoginModal";
+import ToastProvider from "@/components/ToastProvider";
 
 export const metadata = {
   title: "DASHBOARD | DC AMBAL",
@@ -15,9 +17,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-[#F5F6F8]">
-        {children}
-        <Modal />
-        <ChartModal />
+        <ToastProvider>
+          {children}
+          <LoginModal />
+          <Modal />
+          <ChartModal />
+        </ToastProvider>
       </body>
     </html>
   );
