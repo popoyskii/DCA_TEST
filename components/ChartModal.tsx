@@ -14,7 +14,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { useChartModalStore } from "@/store/ChartModalStore";
 
-function Modal() {
+function ChartModal() {
   const [
     addTask,
     image,
@@ -80,13 +80,9 @@ function Modal() {
                 </DialogTitle>
 
                 <div className="mt-2">
-                  <input
-                    type="text"
-                    value={newTaskInput}
-                    onChange={(e) => setNewTaskInput(e.target.value)}
-                    placeholder="Enter a Project Title Here..."
-                    className="w-full border border-gray-300 rounded-md outline-none p-5"
-                  />
+                  <h2 className="w-full outline-none p-5">
+                    *GPT and Charts analysis here*
+                  </h2>
                 </div>
 
                 {/* MAGLALAGAY NG LAMAN */}
@@ -105,4 +101,4 @@ function Modal() {
   );
 }
 
-export default Modal;
+export default ChartModal;

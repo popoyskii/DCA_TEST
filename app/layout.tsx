@@ -1,5 +1,6 @@
 import Modal from "@/components/Modal";
 import "./globals.css";
+import ChartModal from "@/components/ChartModal";
 
 export const metadata = {
   title: "DASHBOARD | DC AMBAL",
@@ -16,6 +17,7 @@ export default function RootLayout({
       <body className="bg-[#F5F6F8]">
         {children}
         <Modal />
+        <ChartModal />
       </body>
     </html>
   );

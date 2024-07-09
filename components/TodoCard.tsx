@@ -64,13 +64,13 @@ function TodoCard({
       ref={innerRef}
     >
       <div className="flex justify-between items-center p-5">
-        <button
+        {/* <button
           className="text-gray-300 hover:text-gray-700"
           onClick={showCardDetails}
         >
           <ClipboardDocumentListIcon className="mr-1 h-5 w-5" />
-        </button>
-        <p>{todo.title}</p>
+        </button> */}
+        <p onClick={showCardDetails}>{todo.title}</p>
 
         <button
           onClick={() => deleteTask(index, todo, id)}
