@@ -1,4 +1,5 @@
 import Modal from "@/components/Modal";
+import ChartModal from "@/components/ChartModal";
 import "./globals.css";
 
 export const metadata = {
@@ -16,6 +17,7 @@ export default function RootLayout({
       <body className="bg-[#F5F6F8]">
         {children}
         <Modal />
+        <ChartModal />
       </body>
     </html>
   );

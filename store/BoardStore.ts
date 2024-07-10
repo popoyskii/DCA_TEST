@@ -1,68 +1,85 @@
-import { ID, databases, storage } from '@/appwrite';
-import { getTodosGroupedByColumn } from '@/lib/getTodosGroupedByColumn';
-import uploadData from '@/lib/uploadData';
-import uploadImage from '@/lib/uploadImage';
-import { create } from 'zustand'
+import { ID, databases, storage } from "@/appwrite";
+import { getTodosGroupedByColumn } from "@/lib/getTodosGroupedByColumn";
+import uploadData from "@/lib/uploadData";
+import uploadImage from "@/lib/uploadImage";
+import { create } from "zustand";
 
-interface BoardState{
-    board: Board;
-    getBoard: () => void;
-    setBoardState: (board: Board) => void;
-    updateTodoInDB: (todo: Todo, columnID: TypedColumn) => void;
-    newTaskInput: string;
-    newTaskType: TypedColumn;
-    image: File | null;
-    projdata: File | null;
-    
+interface BoardState {
+  board: Board;
+  getBoard: () => void;
+  setBoardState: (board: Board) => void;
+  updateTodoInDB: (todo: Todo, columnID: TypedColumn) => void;
+  newTaskInput: string;
+  newTaskType: TypedColumn;
+  image: File | null;
+  projdata: File | null;
+  fileType: string;
 
-    searchString: string;
-    setSearchString: (searchString: string) => void;
+  searchString: string;
+  setSearchString: (searchString: string) => void;
 
-    addTask: (todo:string, columnId: TypedColumn, image?: File| null, projdata?: File | null) => void;
-    deleteTask: (taskIndex: number, todoId: Todo, id: TypedColumn) => void;
+  addTask: (
+    todo: string,
+    columnId: TypedColumn,
+    image?: File | null,
+    projdata?: File | null,
+    fileTyle?: string
+  ) => void;
+  deleteTask: (taskIndex: number, todoId: Todo, id: TypedColumn) => void;
 
-    setNewTaskInput: (input:string) => void;
-    setNewTaskType: (columnId: TypedColumn) => void;
-    setImage: (image: File | null) => void;
-    setProjData: (projdata: File | null) => void;
+  setNewTaskInput: (input: string) => void;
+  setNewTaskType: (columnId: TypedColumn) => void;
+  setImage: (image: File | null) => void;
+  setProjData: (projdata: File | null) => void;
+  setFileType: (fileTyle: string) => void;
 }
 
 export const useBoardStore = create<BoardState>((set, get) => ({
   board: {
-    columns: new Map<TypedColumn, Column>()
+    columns: new Map<TypedColumn, Column>(),
   },
-  
+
   searchString: "",
   newTaskInput: "",
-  setSearchString:(searchString) => set({ searchString }),
+  setSearchString: (searchString) => set({ searchString }),
   newTaskType: "todo",
   image: null,
   projdata: null,
+  fileType: "",
 
   getBoard: async () => {
     const board = await getTodosGroupedByColumn();
     set({ board });
   },
 
-  setBoardState: (board) => set({board}),
+  setBoardState: (board) => set({ board }),
 
-  updateTodoInDB: async(todo, columnId) => {
+  setFileType: (fileType) => set({ fileType }),
+
+  updateTodoInDB: async (todo, columnId) => {
     await databases.updateDocument(
       process.env.NEXT_PUBLIC_DATABASE_ID!,
       process.env.NEXT_PUBLIC_TODOS_COLLETION_ID!,
-      todo.$id,{
+      todo.$id,
+      {
         title: todo.title,
         status: columnId,
       }
-    )
+    );
   },
 
-  setNewTaskInput: (input:string) => set({newTaskInput: input}),
-  setNewTaskType: (columnId:TypedColumn) => set({ newTaskType: columnId}),
+  setNewTaskInput: (input: string) => set({ newTaskInput: input }),
+  setNewTaskType: (columnId: TypedColumn) => set({ newTaskType: columnId }),
   setImage: (image: File | null) => set({ image }),
   setProjData: (projdata: File | null) => set({ projdata }),
 
-  addTask: async (todo: string, columnId: TypedColumn, image?: File | null, projdata?: File | null) => {
+  addTask: async (
+    todo: string,
+    columnId: TypedColumn,
+    image?: File | null,
+    projdata?: File | null,
+    fileType?: string
+  ) => {
     let file: Image | undefined;
     let dataFile: ProjData | undefined;
 
@@ -86,19 +103,21 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       }
     }
 
-    const { $id} = await databases.createDocument(
+    const { $id } = await databases.createDocument(
       process.env.NEXT_PUBLIC_DATABASE_ID!,
       process.env.NEXT_PUBLIC_TODOS_COLLETION_ID!,
-      ID.unique(),{
+      ID.unique(),
+      {
         title: todo,
         status: columnId,
+        fileType: fileType,
         //if image exists
-        ...(file && { image: JSON.stringify(file)}),
-        ...(dataFile && {projdata: JSON.stringify(dataFile)}),
+        ...(file && { image: JSON.stringify(file) }),
+        ...(dataFile && { projdata: JSON.stringify(dataFile) }),
       }
     );
 
-    set({ newTaskInput: ""});
+    set({ newTaskInput: "" });
 
     set((state) => {
       const newColumns = new Map(state.board.columns);
@@ -109,8 +128,8 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         title: todo,
         status: columnId,
         //if eists
-        ...(file && { image: file}),
-        ...(dataFile && { projdata: dataFile}),
+        ...(file && { image: file }),
+        ...(dataFile && { projdata: dataFile }),
       };
 
       const column = newColumns.get(columnId);
@@ -122,22 +141,23 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         });
       } else {
         newColumns.get(columnId)?.todos.push(newTodo);
-      } return {
+      }
+      return {
         board: {
           columns: newColumns,
-        }
-      }
-    })
+        },
+      };
+    });
   },
 
-  deleteTask: async (taskIndex: number, todo: Todo, id:TypedColumn) => {
+  deleteTask: async (taskIndex: number, todo: Todo, id: TypedColumn) => {
     const newColumns = new Map(get().board.columns);
 
-    newColumns.get(id)?.todos.splice(taskIndex, 1 );
+    newColumns.get(id)?.todos.splice(taskIndex, 1);
 
-    set({ board: {columns: newColumns } });
+    set({ board: { columns: newColumns } });
 
-    if(todo.image) {
+    if (todo.image) {
       await storage.deleteFile(todo.image.bucketId, todo.image.fileId);
     }
 
@@ -147,5 +167,4 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       todo.$id
     );
   },
-}))
-
+}));

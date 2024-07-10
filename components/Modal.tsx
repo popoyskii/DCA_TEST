@@ -25,6 +25,8 @@ function Modal() {
     newTaskInput,
     newTaskType,
     setNewTaskInput,
+    fileType,
+    setFileType,
   ] = useBoardStore((state) => [
     state.addTask,
     state.image,
@@ -34,6 +36,8 @@ function Modal() {
     state.newTaskInput,
     state.newTaskType,
     state.setNewTaskInput,
+    state.fileType,
+    state.setFileType,
   ]);
   const [isOpen, closeModal] = useModalStore((state) => [
     state.isOpen,
@@ -44,7 +48,7 @@ function Modal() {
     e.preventDefault();
     if (!newTaskInput) return;
 
-    addTask(newTaskInput, newTaskType, image, projdata);
+    addTask(newTaskInput, newTaskType, image, projdata, fileType);
 
     setImage(null);
     setProjData(null);
@@ -67,6 +71,8 @@ function Modal() {
 
     if (!allowedTypes.includes(file.type)) return;
 
+    console.log(file.type);
+    setFileType(file.type);
     setProjData(file);
   };
 

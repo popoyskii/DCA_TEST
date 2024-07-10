@@ -35,6 +35,7 @@ function TodoCard({
   dragHandleProps,
 }: Props) {
   const deleteTask = useBoardStore((state) => state.deleteTask);
+  const [setData] = useChartModalStore((state) => [state.setData]);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -50,10 +51,8 @@ function TodoCard({
     }
   }, [todo]);
 
-  const openChartModal = useChartModalStore((state) => state.openChartModal);
-
   const showCardDetails = () => {
-    openChartModal();
+    setData(todo);
   };
 
   return (
@@ -64,13 +63,9 @@ function TodoCard({
       ref={innerRef}
     >
       <div className="flex justify-between items-center p-5">
-        <button
-          className="text-gray-300 hover:text-gray-700"
-          onClick={showCardDetails}
-        >
-          <ClipboardDocumentListIcon className="mr-1 h-5 w-5" />
-        </button>
-        <p>{todo.title}</p>
+        <p onClick={showCardDetails} className="cursor-pointer">
+          {todo.title}
+        </p>
 
         <button
           onClick={() => deleteTask(index, todo, id)}

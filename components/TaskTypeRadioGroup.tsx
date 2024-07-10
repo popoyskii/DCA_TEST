@@ -25,7 +25,7 @@ const types = [
   },
 ];
 
-function TaskTypeRadioGroup() {
+function TaskTypeRadioGroup({ status }: any) {
   const [setNewTaskType, newTaskType] = useBoardStore((state) => [
     state.setNewTaskType,
     state.newTaskType,
@@ -56,6 +56,7 @@ function TaskTypeRadioGroup() {
                       : "bg-white"
                   } relative flex cursor-pointer rounded-lg px-5 py-4 shadow-md focus:outline-none`
                 }
+                disabled={status}
               >
                 {({ active, checked }) => (
                   <>
