@@ -24,7 +24,21 @@ interface Image {
   fileId: string;
 }
 
+<<<<<<< HEAD
 interface ProjData {
   bucketId: string;
   fileId: string;
 }
+=======
+interface ProjData{
+    bucketId: string;
+    fileId: string;
+}
+
+interface User {
+    $id: string;
+    username: string;
+    password: string;
+    position: string;
+  }
+>>>>>>> origin/logIn-and-Notification

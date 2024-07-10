@@ -200,6 +200,7 @@ function ChartModal() {
                 </DialogTitle>
 
                 <div className="mt-2">
+<<<<<<< HEAD
                   <input
                     type="text"
                     value={newTaskInput}
@@ -208,6 +209,11 @@ function ChartModal() {
                     className="w-full border border-gray-300 rounded-md outline-none p-5"
                     disabled
                   />
+=======
+                  <h2 className="w-full outline-none p-5">
+                    *GPT and Charts analysis here*
+                  </h2>
+>>>>>>> origin/logIn-and-Notification
                 </div>
 
                 {/* MAGLALAGAY NG LAMAN */}
