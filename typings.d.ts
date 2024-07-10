@@ -24,12 +24,6 @@ interface Image {
   fileId: string;
 }
 
-<<<<<<< HEAD
-interface ProjData {
-  bucketId: string;
-  fileId: string;
-}
-=======
 interface ProjData{
     bucketId: string;
     fileId: string;
@@ -41,4 +35,13 @@ interface User {
     password: string;
     position: string;
   }
->>>>>>> origin/logIn-and-Notification
+
+  interface ChartDataItem {
+    category: string;
+    cost: number;
+  }
+  
+  interface CostChartProps {
+    data: ChartDataItem[];
+  }
+  

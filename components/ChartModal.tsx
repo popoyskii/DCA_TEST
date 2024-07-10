@@ -1,21 +1,14 @@
 "use client";
 
-import { useState, Fragment, useRef, FormEvent, useEffect } from "react";
+import { useState, Fragment, useEffect } from "react";
 import Markdown from "react-markdown";
 import { Dialog, DialogTitle, Transition } from "@headlessui/react";
 import getUrl from "@/lib/getUrl";
 import getProjectData from "@/lib/getProjectData";
 import { useChartModalStore } from "@/store/ChartModalStore";
-import { useModalStore } from "@/store/ModalStore";
 import { useBoardStore } from "@/store/BoardStore";
-import TaskTypeRadioGroup from "./TaskTypeRadioGroup";
 import Image from "next/image";
-import {
-  ChartBarSquareIcon,
-  PaperClipIcon,
-  PhotoIcon,
-  TrashIcon,
-} from "@heroicons/react/24/solid";
+import CostChart from "./CostChart";
 
 function ChartModal() {
   const [
@@ -49,6 +42,9 @@ function ChartModal() {
   const [pdf, setPdf] = useState<string | null>(null);
   const [isLoading, setLoading] = useState<boolean>(false);
   const [recommand, setRecommand] = useState<string | null>(null);
+  const [costData, setCostData] = useState<
+    { category: string; cost: number }[]
+  >([]);
 
   useEffect(() => {
     if (data) {
@@ -143,7 +139,27 @@ function ChartModal() {
 
     console.log(message[0].content[0].text.value);
     setRecommand(message[0].content[0].text.value);
+
+    const costBreakdown = extractCostBreakdown(
+      message[0].content[0].text.value
+    );
+    setCostData(costBreakdown);
     setLoading(false);
+  };
+
+  const extractCostBreakdown = (text: string) => {
+    const regex = /([A-Za-z\s]+):\s*₱([\d,]+\.\d{2})/g;
+    const result = [];
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+      result.push({
+        category: match[1].trim(),
+        cost: parseFloat(match[2].replace(/,/g, "")),
+      });
+    }
+
+    return result;
   };
 
   const Convert = async (url: string, type: string) => {
@@ -160,14 +176,8 @@ function ChartModal() {
   };
 
   return (
-    // Use the `Transition` component at the root level
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog
-        // onSubmit={}
-        as="form"
-        className="relative z-10"
-        onClose={closeChartModal}
-      >
+      <Dialog as="form" className="relative z-10" onClose={closeChartModal}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -181,15 +191,15 @@ function ChartModal() {
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-y-auto">
-          <div className="flex min-h-full  items-center justify-center p-4 text-center">
+          <div className="flex min-h-full items-center justify-center p-4 text-center">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
+              enterFrom="opacity-0 scale-95"
+              enterTo="opacity-100 scale-100"
               leave="ease-in duration-200"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
+              leaveFrom="opacity-100 scale-100"
+              leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <DialogTitle
@@ -200,7 +210,6 @@ function ChartModal() {
                 </DialogTitle>
 
                 <div className="mt-2">
-<<<<<<< HEAD
                   <input
                     type="text"
                     value={newTaskInput}
@@ -209,20 +218,8 @@ function ChartModal() {
                     className="w-full border border-gray-300 rounded-md outline-none p-5"
                     disabled
                   />
-=======
-                  <h2 className="w-full outline-none p-5">
-                    *GPT and Charts analysis here*
-                  </h2>
->>>>>>> origin/logIn-and-Notification
                 </div>
 
-                {/* MAGLALAGAY NG LAMAN */}
-
-                {/* GPT BOX */}
-
-                {/* CHARTS */}
-
-                {/* IF WALANG FILE NA INUPLOAD EDI RETURN NA NO DATA FILES DETECTED */}
                 {imageUrl && (
                   <Image
                     alt="Upload Image"
@@ -233,15 +230,14 @@ function ChartModal() {
                   />
                 )}
                 {isLoading ? (
-                  <div className="flex items-center justify-center">
-                    Loading...
+                  <div className="flex items-center justify-center mt-2">
+                    Loading GPT Recommendations...
                   </div>
                 ) : (
-                  recommand && (
-                    <div className="mt-4">
-                      <Markdown>{recommand}</Markdown>
-                    </div>
-                  )
+                  <div className="mt-4">
+                    {recommand && <Markdown>{recommand}</Markdown>}
+                    {costData.length > 0 && <CostChart data={costData} />}
+                  </div>
                 )}
               </Dialog.Panel>
             </Transition.Child>

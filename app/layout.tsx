@@ -1,5 +1,4 @@
 import Modal from "@/components/Modal";
-import ChartModal from "@/components/ChartModal";
 import "./globals.css";
 import ChartModal from "@/components/ChartModal";
 import LoginModal from "@/components/LoginModal";
@@ -18,18 +17,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-[#F5F6F8]">
-<<<<<<< HEAD
-        {children}
-        <Modal />
-        <ChartModal />
-=======
         <ToastProvider>
           {children}
           <LoginModal />
           <Modal />
           <ChartModal />
         </ToastProvider>
->>>>>>> origin/logIn-and-Notification
       </body>
     </html>
   );

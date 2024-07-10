@@ -63,19 +63,15 @@ function TodoCard({
       ref={innerRef}
     >
       <div className="flex justify-between items-center p-5">
-<<<<<<< HEAD
         <p onClick={showCardDetails} className="cursor-pointer">
           {todo.title}
         </p>
-=======
         {/* <button
           className="text-gray-300 hover:text-gray-700"
           onClick={showCardDetails}
         >
           <ClipboardDocumentListIcon className="mr-1 h-5 w-5" />
         </button> */}
-        <p onClick={showCardDetails}>{todo.title}</p>
->>>>>>> origin/logIn-and-Notification
 
         <button
           onClick={() => deleteTask(index, todo, id)}
