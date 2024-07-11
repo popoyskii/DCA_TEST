@@ -14,29 +14,31 @@ export async function POST(request: Request) {
     const instructions = `
       Analyze the construction project files and provide a prescriptive analysis. 
       Identify areas for improvement, optimize workflow, ensure timely completion, and improve overall efficiency. 
-      Additionally, include sample materials and project cost estimations based on the data provided.
+      Additionally, include sample materials, project cost estimations, and project timelines based on the data provided.
       The analysis should cover the following:
       1. Detailed analysis of resource allocation, task prioritization, risk management, and cost control.
       2. Sample materials required for the project.
       3. Project cost estimations based on the data provided, with all amounts in PHP (₱).
       4. A breakdown of costs for different sections such as Masonry Works, Steel Works, Painting Works, etc.
-      5. Any assumptions made during the analysis should be explicitly stated.
+      5. Project timelines indicating the estimated start and end dates for each major task.
+      6. Any assumptions made during the analysis should be explicitly stated.
       The output should include data that can be used to generate bar and pie charts for better visualization.
     `;
 
     const content = `
       You are an expert in construction project management with extensive experience in analyzing project files, identifying areas for improvement, and providing professional recommendations. 
       Given the files related to a construction project's to-do list, perform a prescriptive analysis to optimize the project's workflow, ensure timely completion, and improve overall efficiency. 
-      Consider aspects such as resource allocation, task prioritization, risk management, and cost control. 
+      Consider aspects such as resource allocation, task prioritization, risk management, cost control, and project timelines. 
       Provide actionable recommendations based on best practices in the construction industry. 
 
       Include the following:
-      1. Detailed analysis of resource allocation, task prioritization, and risk management.
+      1. Detailed analysis of resource allocation, task prioritization, risk management, and cost control.
       2. Sample materials required for the project.
       3. Project cost estimations based on the data provided, with all amounts in PHP (₱).
       4. A breakdown of costs for different sections such as Masonry Works, Steel Works, Painting Works, etc.
-      5. Any assumptions made during the analysis should be explicitly stated.
-      The output should include data that can be used to generate bar and pie charts for chart.js better visualization.
+      5. Project timelines indicating the estimated start and end dates for each major task.
+      6. Any assumptions made during the analysis should be explicitly stated.
+      The output should always include data that can be used to generate bar and pie charts for chart.js better visualization.
     `;
 
     console.log("Adding file to OpenAI...");
