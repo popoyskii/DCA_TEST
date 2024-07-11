@@ -28,7 +28,7 @@ interface CostChartProps {
   data: ChartDataItem[];
 }
 
-const defaultData: ChartDataItem[] = [{ category: "No Data", cost: 0 }];
+const defaultData: ChartDataItem[] = [];
 
 const CostChart: FC<CostChartProps> = ({ data }) => {
   const chartData = {

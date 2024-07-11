@@ -9,6 +9,8 @@ import { useChartModalStore } from "@/store/ChartModalStore";
 import { useBoardStore } from "@/store/BoardStore";
 import Image from "next/image";
 import CostChart from "./CostChart";
+import { toast } from "react-toastify";
+import { ArrowPathIcon } from "@heroicons/react/24/solid";
 
 function ChartModal() {
   const [
@@ -60,9 +62,7 @@ function ChartModal() {
 
         fetchImage();
       }
-      console.log("Data");
       if (data.projdata) {
-        console.log(data.projdata);
         const fetchData = async () => {
           const url = await getProjectData(data.projdata!);
           if (url) {
@@ -77,7 +77,6 @@ function ChartModal() {
 
   useEffect(() => {
     if (dataUrl) {
-      console.log(dataUrl);
       Convert(dataUrl, data.fileType as string);
     }
   }, [dataUrl]);
@@ -89,8 +88,8 @@ function ChartModal() {
   }, [pdf]);
 
   const getRecommand = async (url: string) => {
-    console.log("url: ", url);
     setLoading(true);
+    toast.info("Generating GPT recommendations...");
     const response = await fetch("/api/generateRecommand", {
       method: "POST",
       headers: {
@@ -99,13 +98,8 @@ function ChartModal() {
       body: JSON.stringify({ url }),
     });
 
-    console.log(response);
-
     if (response.ok) {
       const data = await response.json();
-
-      console.log(data);
-
       const interval = setInterval(async () => {
         const runResponse = await fetch("/api/openai/run", {
           method: "POST",
@@ -114,7 +108,6 @@ function ChartModal() {
             thread_id: data.thread_id,
           }),
         });
-        console.log("getting with interval", data.id);
 
         const run = await runResponse.json();
         if (run.status === "completed") {
@@ -122,6 +115,9 @@ function ChartModal() {
           clearInterval(interval);
         }
       }, 1000);
+    } else {
+      toast.error("Failed to generate recommendations");
+      setLoading(false);
     }
   };
 
@@ -133,11 +129,8 @@ function ChartModal() {
       }),
     });
     const data = await runResponse.json();
-
-    console.log("---- message data ---", data);
     const message = data.data.filter((item: any) => item.role === "assistant");
 
-    console.log(message[0].content[0].text.value);
     setRecommand(message[0].content[0].text.value);
 
     const costBreakdown = extractCostBreakdown(
@@ -145,6 +138,7 @@ function ChartModal() {
     );
     setCostData(costBreakdown);
     setLoading(false);
+    toast.success("GPT recommendations generated");
   };
 
   const extractCostBreakdown = (text: string) => {
@@ -173,6 +167,13 @@ function ChartModal() {
 
     const data = await response.json();
     setPdf(data.pdf);
+  };
+
+  const regenerateResponse = async () => {
+    if (pdf) {
+      toast.info("Regenerating response...");
+      getRecommand(pdf);
+    }
   };
 
   return (
@@ -225,7 +226,7 @@ function ChartModal() {
                     alt="Upload Image"
                     width={200}
                     height={200}
-                    className="w-full h-44 object-cover mt-2 filter hover:grayscale transition-all duration-150 cursor-not-allowed"
+                    className="w-full h-44 object-cover mt-2 filter hover:grayscale transition-all duration-150"
                     src={imageUrl}
                   />
                 )}
@@ -238,6 +239,16 @@ function ChartModal() {
                     {recommand && <Markdown>{recommand}</Markdown>}
                     {costData.length > 0 && <CostChart data={costData} />}
                   </div>
+                )}
+
+                {!isLoading && (
+                  <button
+                    onClick={regenerateResponse}
+                    title="Regenerate Response"
+                    className="mt-2 mr-2 text-gray-500 hover:text-gray-700 font-bold py-2 px-4 rounded"
+                  >
+                    <ArrowPathIcon className="h-5 w-5" />
+                  </button>
                 )}
               </Dialog.Panel>
             </Transition.Child>
