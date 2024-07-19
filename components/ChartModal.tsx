@@ -23,6 +23,7 @@ function ChartModal() {
     newTaskType,
     setNewTaskInput,
     setNewTaskType,
+    moveToNextState,
   ] = useBoardStore((state) => [
     state.addTask,
     state.image,
@@ -33,6 +34,7 @@ function ChartModal() {
     state.newTaskType,
     state.setNewTaskInput,
     state.setNewTaskType,
+    state.moveToNextState,
   ]);
   const [isOpen, closeChartModal, data] = useChartModalStore((state) => [
     state.isOpen,
@@ -89,7 +91,6 @@ function ChartModal() {
 
   const getRecommand = async (url: string) => {
     setLoading(true);
-    toast.info("Generating GPT recommendations...");
     const response = await fetch("/api/generateRecommand", {
       method: "POST",
       headers: {
@@ -138,7 +139,6 @@ function ChartModal() {
     );
     setCostData(costBreakdown);
     setLoading(false);
-    toast.success("GPT recommendations generated");
   };
 
   const extractCostBreakdown = (text: string) => {
@@ -173,6 +173,13 @@ function ChartModal() {
     if (pdf) {
       toast.info("Regenerating response...");
       getRecommand(pdf);
+    }
+  };
+
+  const handleMoveToNextState = () => {
+    if (data) {
+      moveToNextState(data.$id, "todo", 0);
+      closeChartModal();
     }
   };
 
@@ -216,7 +223,7 @@ function ChartModal() {
                     value={newTaskInput}
                     onChange={(e) => setNewTaskInput(e.target.value)}
                     placeholder="Enter a Project Title Here..."
-                    className="w-full border border-gray-300 rounded-md outline-none p-5"
+                    className="w-full border border-gray-300 rounded-md outline-none p-2 opacity-90"
                     disabled
                   />
                 </div>
@@ -242,13 +249,21 @@ function ChartModal() {
                 )}
 
                 {!isLoading && (
-                  <button
-                    onClick={regenerateResponse}
-                    title="Regenerate Response"
-                    className="mt-2 mr-2 text-gray-500 hover:text-gray-700 font-bold py-2 px-4 rounded"
-                  >
-                    <ArrowPathIcon className="h-5 w-5" />
-                  </button>
+                  <>
+                    <button
+                      onClick={regenerateResponse}
+                      title="Regenerate Response"
+                      className="mt-2 mr-2 text-gray-500 hover:text-gray-700 font-bold py-2 px-4 rounded"
+                    >
+                      <ArrowPathIcon className="h-5 w-5" />
+                    </button>
+                    <button
+                      onClick={handleMoveToNextState}
+                      className="mt-2 mr-2 text-blue-500 hover:text-blue-700 font-bold py-2 px-4 rounded"
+                    >
+                      Move to To Do
+                    </button>
+                  </>
                 )}
               </Dialog.Panel>
             </Transition.Child>

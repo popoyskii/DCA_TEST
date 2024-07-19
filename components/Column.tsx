@@ -13,6 +13,7 @@ type Props = {
 const idToColumnText: {
   [key in TypedColumn]: string;
 } = {
+  proposed: "Proposed",
   todo: "To Do",
   inprogress: "In Progress",
   done: "Done",
@@ -38,7 +39,7 @@ function Column({ id, todos, index }: Props) {
           {...provided.dragHandleProps}
           ref={provided.innerRef}
         >
-          {/* render droppable forTODOS */}
+          {/* render droppable for TODOS */}
           <Droppable droppableId={index.toString()} type="card">
             {(provided, snapshot) => (
               <div

@@ -3,10 +3,15 @@
 import fetchSuggestion from "@/lib/fetchSuggestion";
 import { useBoardStore } from "@/store/BoardStore";
 import { useAuthStore } from "@/store/AuthStore";
-import { MagnifyingGlassIcon, UserCircleIcon } from "@heroicons/react/24/solid";
+import {
+  BookOpenIcon,
+  MagnifyingGlassIcon,
+  UserCircleIcon,
+} from "@heroicons/react/24/solid";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import Avatar from "react-avatar";
+import { useArchiveModalStore } from "@/store/ArchiveModalStore";
 
 function Header() {
   const [board, searchString, setSearchString] = useBoardStore((state) => [
@@ -17,6 +22,10 @@ function Header() {
   const { isAuthenticated } = useAuthStore();
   const [loading, setLoading] = useState<boolean>(false);
   const [suggestion, setSuggestion] = useState<string>("");
+
+  const openArchivedModal = useArchiveModalStore(
+    (state) => state.openArchivedModal
+  );
 
   useEffect(() => {
     if (!isAuthenticated || board.columns.size === 0) return;
@@ -101,6 +110,18 @@ function Header() {
               ? suggestion
               : "GPT is summarizing your tasks for the day..."}
           </p>
+        )}
+      </div>
+
+      <div className="flex items-center justify-center px-5 py-5 md:py-5">
+        {isAuthenticated && (
+          <button
+            title="Archived Projects"
+            onClick={openArchivedModal}
+            className="bg-green-900 opacity-65 hover:bg-gray-900 text-white font-medium py-2 px-4 rounded"
+          >
+            <BookOpenIcon className="h-4 w-4" />
+          </button>
         )}
       </div>
     </header>

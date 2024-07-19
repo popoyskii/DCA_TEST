@@ -11,6 +11,7 @@ function Board() {
     getBoard,
     setBoardState,
     updateTodoInDB,
+    archiveOldItems,
     loading,
     successMessage,
     errorMessage,
@@ -19,6 +20,7 @@ function Board() {
     state.getBoard,
     state.setBoardState,
     state.updateTodoInDB,
+    state.archiveOldItems,
     state.loading,
     state.successMessage,
     state.errorMessage,
@@ -31,6 +33,12 @@ function Board() {
     }
   }, [getBoard, isAuthenticated]);
 
+  useEffect(() => {
+    if (board.columns.size > 0) {
+      archiveOldItems();
+    }
+  }, [board, archiveOldItems]);
+
   if (!isAuthenticated) {
     return null; // Or you can return a message or redirect to the login page
   }
@@ -41,20 +49,11 @@ function Board() {
     // dragged outside of board
     if (!destination) return;
 
-    //handle column drag
+    // handle column drag
     if (type === "column") {
-      const entries = Array.from(board.columns.entries());
-      const [removed] = entries.splice(source.index, 1);
-      entries.splice(destination.index, 0, removed);
-      const rearrangeColumns = new Map(entries);
-      // update board columns
-      setBoardState({
-        ...board,
-        columns: rearrangeColumns,
-      });
+      return; // Disable column dragging
     }
 
-    //handle card drag
     const columns = Array.from(board.columns);
     const startColIndex = columns[Number(source.droppableId)];
     const finishColIndex = columns[Number(destination.droppableId)];
@@ -69,45 +68,61 @@ function Board() {
       todos: finishColIndex[1].todos,
     };
 
-    if (!startCol || !finishCol) return;
+    // Allow movement within the same column
+    if (startCol.id === finishCol.id) {
+      const newTodos = Array.from(startCol.todos);
+      const [movedTodo] = newTodos.splice(source.index, 1);
+      newTodos.splice(destination.index, 0, movedTodo);
 
-    if (source.index === destination.index && startCol === finishCol) return;
+      const newCol = {
+        id: startCol.id,
+        todos: newTodos,
+      };
+
+      const newColumns = new Map(board.columns);
+      newColumns.set(startCol.id, newCol);
+
+      setBoardState({ ...board, columns: newColumns });
+      return;
+    }
+
+    // Only allow movement to the next column
+    const allowedMoves: { [key in TypedColumn]: TypedColumn } = {
+      proposed: "todo",
+      todo: "inprogress",
+      inprogress: "done",
+      done: "done", // No further movement
+    };
+
+    if (allowedMoves[startCol.id] !== finishCol.id) {
+      return;
+    }
 
     const newTodos = startCol.todos;
     const [todoMoved] = newTodos.splice(source.index, 1);
 
-    if (startCol.id === finishCol.id) {
-      //same column task drag
-      newTodos.splice(destination.index, 0, todoMoved);
-      const newCol = {
-        id: startCol.id,
-        todos: newTodos,
-      };
-      const newColumns = new Map(board.columns);
-      newColumns.set(startCol.id, newCol);
+    // drag to another column
+    const finishTodos = Array.from(finishCol.todos);
+    finishTodos.splice(destination.index, 0, todoMoved);
 
-      setBoardState({ ...board, columns: newColumns });
-    } else {
-      //drag to another column
-      const finishTodos = Array.from(finishCol.todos);
-      finishTodos.splice(destination.index, 0, todoMoved);
+    const newColumns = new Map(board.columns);
+    const newCol = {
+      id: startCol.id,
+      todos: newTodos,
+    };
 
-      const newColumns = new Map(board.columns);
-      const newCol = {
-        id: startCol.id,
-        todos: newTodos,
-      };
+    newColumns.set(startCol.id, newCol);
+    newColumns.set(finishCol.id, {
+      id: finishCol.id,
+      todos: finishTodos,
+    });
+    console.log("SOURCE: ", source);
+    console.log("DEST: ", destination);
+    console.log("TYPE:", type);
 
-      newColumns.set(startCol.id, newCol);
-      newColumns.set(finishCol.id, {
-        id: finishCol.id,
-        todos: finishTodos,
-      });
-
-      //update in DB
-      updateTodoInDB(todoMoved, finishCol.id);
-      setBoardState({ ...board, columns: newColumns });
-    }
+    // update in DB
+    updateTodoInDB(todoMoved, finishCol.id);
+    setBoardState({ ...board, columns: newColumns });
   };
 
   return (
@@ -116,7 +131,7 @@ function Board() {
         <Droppable droppableId="board" direction="horizontal" type="column">
           {(provided) => (
             <div
-              className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-7xl mx-auto"
+              className="grid grid-cols-1 md:grid-cols-4 gap-5 max-w-7xl mx-auto"
               {...provided.droppableProps}
               ref={provided.innerRef}
             >

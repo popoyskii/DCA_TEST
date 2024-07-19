@@ -13,11 +13,14 @@ interface BoardState {
   getBoard: () => void;
   setBoardState: (board: Board) => void;
   updateTodoInDB: (todo: Todo, columnID: TypedColumn) => void;
+  moveToNextState: (todoId: string, nextState: TypedColumn, percentageUsed: number) => void;
   newTaskInput: string;
   newTaskType: TypedColumn;
   image: File | null;
   projdata: File | null;
   fileType: string;
+  archiveOldItems: () => void;
+  archivedProjects: Todo[];
 
   searchString: string;
   setSearchString: (searchString: string) => void;
@@ -29,7 +32,7 @@ interface BoardState {
     projdata?: File | null,
     fileType?: string
   ) => void;
-  deleteTask: (taskIndex: number, todoId: Todo, id: TypedColumn) => void;
+  deleteTask: (taskIndex: number, todo: Todo, id: TypedColumn) => void;
 
   setNewTaskInput: (input: string) => void;
   setNewTaskType: (columnId: TypedColumn) => void;
@@ -66,6 +69,30 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       toast.error('Failed to load board');
     }
   },
+  archivedProjects: [],
+  
+  archiveOldItems: async () => {
+    const { board } = get();
+    const doneColumn = board.columns.get("done");
+
+    if (doneColumn && doneColumn.todos.length > 5) {
+      const newDoneTodos = doneColumn.todos.slice(0, 5);
+      const archivedTodos = doneColumn.todos.slice(5);
+
+      // Update the board state with the new done todos
+      const newColumns = new Map(board.columns);
+      newColumns.set("done", { id: "done", todos: newDoneTodos });
+
+      set((state) => ({
+        board: {
+          columns: newColumns,
+        },
+        archivedProjects: [...state.archivedProjects, ...archivedTodos],
+      }));
+      
+      // Optionally, you can update the database to mark these items as archived.
+    }
+  },
 
   setBoardState: (board) => set({ board }),
 
@@ -91,6 +118,33 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       toast.error('Failed to update todo');
     }
   },
+
+  moveToNextState: async (todoId, nextState, percentageUsed) => {
+    set({ loading: true });
+    toast.info("Moving to next state...");
+    try {
+      await databases.updateDocument(
+        process.env.NEXT_PUBLIC_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_TODOS_COLLETION_ID!,
+        todoId,
+        {
+          status: "todo",
+          percentageUsed: percentageUsed,
+        }
+      );
+  
+      const board = await getTodosGroupedByColumn();
+      // set({ board, loading: false });
+      console.log(board);
+      toast.success("Moved to next state successfully");
+    } catch (error) {
+      set({ loading: false });
+      toast.error("Failed to move to next state");
+    }
+  },
+  
+  
+  
 
   setNewTaskInput: (input: string) => set({ newTaskInput: input }),
   setNewTaskType: (columnId: TypedColumn) => set({ newTaskType: columnId }),
@@ -157,6 +211,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           //if exists
           ...(file && { image: file }),
           ...(dataFile && { projdata: dataFile }),
+          percentageUsed: 0,
         };
 
         const column = newColumns.get(columnId);

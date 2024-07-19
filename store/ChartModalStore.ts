@@ -16,6 +16,7 @@ export const useChartModalStore = create<ChartModalState>()((set) => ({
     title: "",
     status: "todo",
     fileType: "",
+    percentageUsed: 0,
   },
   setData: (data) => set({ data, isOpen: true }),
   openChartModal: () => set({ isOpen: true }),

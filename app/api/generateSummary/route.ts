@@ -22,7 +22,7 @@ export async function POST(request: Request) {
         },
         {
           role: "user",
-          content: `Hi there, provide a summary of the following todos. Count how many todos are in each category such as To do, in progress and done, and have a very short suggestion about the tasks then tell the user to have a productive day! Here's the data ${JSON.stringify(
+          content: `Hi there, provide a summary of the following todos. When the project is in proposed stage it will have GPT Recommendations and Prescriptive Analysis when card item is clicked. Count how many todos are in each category such as Proposed, To do, in progress and done, and have a very short suggestion about the tasks then tell the user to have a productive day! Here's the data ${JSON.stringify(
             todos
           )}`,
         },

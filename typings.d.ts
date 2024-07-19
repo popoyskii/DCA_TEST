@@ -2,7 +2,7 @@ interface Board {
   columns: Map<TypedColumn, Column>;
 }
 
-type TypedColumn = "todo" | "inprogress" | "done";
+type TypedColumn = "proposed" | "todo" | "inprogress" | "done";
 
 interface Column {
   id: TypedColumn;
@@ -17,6 +17,7 @@ interface Todo {
   image?: Image;
   projdata?: ProjData;
   fileType?: string;
+  percentageUsed: number;
 }
 
 interface Image {
