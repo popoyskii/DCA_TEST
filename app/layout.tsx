@@ -4,6 +4,7 @@ import ChartModal from "@/components/ChartModal";
 import LoginModal from "@/components/LoginModal";
 import ToastProvider from "@/components/ToastProvider";
 import ArchivedModal from "@/components/ArchiveModal";
+import UserActions from "@/components/UserActions";
 
 export const metadata = {
   title: "DASHBOARD | DC AMBAL",
@@ -21,6 +22,7 @@ export default function RootLayout({
         <ToastProvider>
           {children}
           <LoginModal />
+          <UserActions />
           <ArchivedModal />
           <Modal />
           <ChartModal />

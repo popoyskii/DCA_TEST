@@ -6,6 +6,12 @@ import { CheckCircleIcon } from "@heroicons/react/24/solid";
 
 const types = [
   {
+    id: "proposed",
+    name: "Proposed",
+    description: "A new project to be proposed",
+    color: "bg-blue-500",
+  },
+  {
     id: "todo",
     name: "To do",
     description: "A new project to be completed",

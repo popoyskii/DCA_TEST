@@ -4,6 +4,8 @@ import uploadData from '@/lib/uploadData';
 import uploadImage from '@/lib/uploadImage';
 import { create } from 'zustand';
 import { toast } from 'react-toastify';
+import addChangelog from '@/lib/addChangelog';
+import getCurrentUser from '@/lib/getCurrentUser';
 
 interface BoardState {
   board: Board;
@@ -12,7 +14,7 @@ interface BoardState {
   errorMessage: string | null;
   getBoard: () => void;
   setBoardState: (board: Board) => void;
-  updateTodoInDB: (todo: Todo, columnID: TypedColumn) => void;
+  updateTodoInDB: (todo: Todo, columnID: TypedColumn, changes: string) => void;
   moveToNextState: (todoId: string, nextState: TypedColumn, percentageUsed: number) => void;
   newTaskInput: string;
   newTaskType: TypedColumn;
@@ -98,7 +100,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   setFileType: (fileType) => set({ fileType }),
 
-  updateTodoInDB: async (todo, columnId) => {
+  updateTodoInDB: async (todo, columnId, changes) => {
     set({ loading: true });
     toast.info('Updating todo...');
     try {
@@ -111,6 +113,12 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           status: columnId,
         }
       );
+  
+      const userId = await getCurrentUser();
+      if (userId) {
+        await addChangelog(todo.$id, changes, userId);
+      }
+  
       set({ successMessage: 'Todo updated successfully', loading: false });
       toast.success('Todo updated successfully');
     } catch (error) {
@@ -118,7 +126,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       toast.error('Failed to update todo');
     }
   },
-
+  
   moveToNextState: async (todoId, nextState, percentageUsed) => {
     set({ loading: true });
     toast.info("Moving to next state...");
@@ -163,7 +171,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     try {
       let file: Image | undefined;
       let dataFile: ProjData | undefined;
-
+  
       if (image) {
         const fileUploaded = await uploadImage(image);
         if (fileUploaded) {
@@ -173,7 +181,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           };
         }
       }
-
+  
       if (projdata) {
         const fileUploaded = await uploadData(projdata);
         if (fileUploaded) {
@@ -183,7 +191,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           };
         }
       }
-
+  
       const { $id } = await databases.createDocument(
         process.env.NEXT_PUBLIC_DATABASE_ID!,
         process.env.NEXT_PUBLIC_TODOS_COLLETION_ID!,
@@ -192,30 +200,33 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           title: todo,
           status: columnId,
           fileType: fileType,
-          //if image exists
           ...(file && { image: JSON.stringify(file) }),
           ...(dataFile && { projdata: JSON.stringify(dataFile) }),
         }
       );
-
+  
+      const userId = await getCurrentUser();
+      if (userId) {
+        await addChangelog($id, 'Task created', userId);
+      }
+  
       set({ newTaskInput: '' });
-
+  
       set((state) => {
         const newColumns = new Map(state.board.columns);
-
+  
         const newTodo: Todo = {
           $id,
           $createdAt: new Date().toISOString(),
           title: todo,
           status: columnId,
-          //if exists
           ...(file && { image: file }),
           ...(dataFile && { projdata: dataFile }),
           percentageUsed: 0,
         };
-
+  
         const column = newColumns.get(columnId);
-
+  
         if (!column) {
           newColumns.set(columnId, {
             id: columnId,
@@ -238,26 +249,33 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       toast.error('Failed to add task');
     }
   },
+  
 
   deleteTask: async (taskIndex: number, todo: Todo, id: TypedColumn) => {
     set({ loading: true });
     toast.info('Deleting task...');
     try {
       const newColumns = new Map(get().board.columns);
-
+  
       newColumns.get(id)?.todos.splice(taskIndex, 1);
-
+  
       set({ board: { columns: newColumns } });
-
+  
       if (todo.image) {
         await storage.deleteFile(todo.image.bucketId, todo.image.fileId);
       }
-
+  
       await databases.deleteDocument(
         process.env.NEXT_PUBLIC_DATABASE_ID!,
         process.env.NEXT_PUBLIC_TODOS_COLLETION_ID!,
         todo.$id
       );
+  
+      const userId = await getCurrentUser();
+      if (userId) {
+        await addChangelog(todo.$id, 'Task deleted', userId);
+      }
+  
       set({ successMessage: 'Task deleted successfully', loading: false });
       toast.success('Task deleted successfully');
     } catch (error) {
@@ -265,4 +283,4 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       toast.error('Failed to delete task');
     }
   },
-}));
+  }));

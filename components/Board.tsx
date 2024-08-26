@@ -46,13 +46,7 @@ function Board() {
   const handleOnDragEnd = (result: DropResult) => {
     const { destination, source, type } = result;
 
-    // dragged outside of board
     if (!destination) return;
-
-    // handle column drag
-    if (type === "column") {
-      return; // Disable column dragging
-    }
 
     const columns = Array.from(board.columns);
     const startColIndex = columns[Number(source.droppableId)];
@@ -68,7 +62,6 @@ function Board() {
       todos: finishColIndex[1].todos,
     };
 
-    // Allow movement within the same column
     if (startCol.id === finishCol.id) {
       const newTodos = Array.from(startCol.todos);
       const [movedTodo] = newTodos.splice(source.index, 1);
@@ -86,12 +79,11 @@ function Board() {
       return;
     }
 
-    // Only allow movement to the next column
     const allowedMoves: { [key in TypedColumn]: TypedColumn } = {
       proposed: "todo",
       todo: "inprogress",
       inprogress: "done",
-      done: "done", // No further movement
+      done: "done",
     };
 
     if (allowedMoves[startCol.id] !== finishCol.id) {
@@ -101,7 +93,6 @@ function Board() {
     const newTodos = startCol.todos;
     const [todoMoved] = newTodos.splice(source.index, 1);
 
-    // drag to another column
     const finishTodos = Array.from(finishCol.todos);
     finishTodos.splice(destination.index, 0, todoMoved);
 
@@ -116,12 +107,9 @@ function Board() {
       id: finishCol.id,
       todos: finishTodos,
     });
-    console.log("SOURCE: ", source);
-    console.log("DEST: ", destination);
-    console.log("TYPE:", type);
 
     // update in DB
-    updateTodoInDB(todoMoved, finishCol.id);
+    updateTodoInDB(todoMoved, finishCol.id, `Moved to ${finishCol.id}`);
     setBoardState({ ...board, columns: newColumns });
   };
 

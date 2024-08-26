@@ -46,3 +46,11 @@ interface User {
     data: ChartDataItem[];
   }
   
+  interface Changelog {
+    $id: string;
+    todoId: string;
+    changes: string;
+    timestamp: string;
+    userId: string;
+  }
+  
