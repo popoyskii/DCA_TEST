@@ -11,16 +11,7 @@ const UserActions = () => {
     logout();
   };
 
-  return (
-    <div className="relative">
-      <button onClick={() => setShowChangelogs(!showChangelogs)}>
-        View Changelogs
-      </button>
-      {showChangelogs && <ChangelogList />}
-      <button onClick={handleLogout}> Log Out</button>
-      {/* Add more actions here like "Manage Users", "Clear Archived" etc. */}
-    </div>
-  );
+  return;
 };
 
 export default UserActions;

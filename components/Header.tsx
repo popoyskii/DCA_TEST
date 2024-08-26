@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import fetchSuggestion from "@/lib/fetchSuggestion";
 import { useBoardStore } from "@/store/BoardStore";
 import { useAuthStore } from "@/store/AuthStore";
@@ -9,9 +10,10 @@ import {
   UserCircleIcon,
 } from "@heroicons/react/24/solid";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
 import Avatar from "react-avatar";
 import { useArchiveModalStore } from "@/store/ArchiveModalStore";
+import getCurrentUser from "@/lib/getCurrentUser";
+import { useChangelogModalStore } from "@/store/ChangelogModalStore";
 
 function Header() {
   const [board, searchString, setSearchString] = useBoardStore((state) => [
@@ -19,13 +21,17 @@ function Header() {
     state.searchString,
     state.setSearchString,
   ]);
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, logout } = useAuthStore();
   const [loading, setLoading] = useState<boolean>(false);
   const [suggestion, setSuggestion] = useState<string>("");
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [username, setUserName] = useState<string>("");
 
   const openArchivedModal = useArchiveModalStore(
     (state) => state.openArchivedModal
   );
+
+  const openChangelogModal = useChangelogModalStore((state) => state.openModal);
 
   useEffect(() => {
     if (!isAuthenticated || board.columns.size === 0) return;
@@ -40,8 +46,12 @@ function Header() {
     fetchSuggestionFunc();
   }, [board, isAuthenticated]);
 
+  const toggleDropdown = () => {
+    setDropdownOpen(!dropdownOpen);
+  };
+
   return (
-    <header>
+    <header className="relative">
       <div className="flex flex-col md:flex-row items-center p-5 bg-gray-500/10 rounded-b-2xl">
         <div
           className="
@@ -88,9 +98,44 @@ function Header() {
               </button>
             </form>
           )}
-          {/* Avatar */}
+
+          {/* Avatar with Dropdown */}
           {isAuthenticated && (
-            <Avatar name="DC Ambal" round size="50" color="#007206" />
+            <div className="relative">
+              <button onClick={toggleDropdown}>
+                <Avatar
+                  name={username || "User"}
+                  round
+                  size="50"
+                  color="#007206"
+                />
+              </button>
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-2 z-20">
+                  <a
+                    href="#"
+                    onClick={openArchivedModal}
+                    className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                  >
+                    Archived Projects
+                  </a>
+                  <a
+                    href="#"
+                    onClick={openChangelogModal}
+                    className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                  >
+                    View Changelogs
+                  </a>
+                  <a
+                    href="#"
+                    onClick={logout}
+                    className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
+                  >
+                    Log Out
+                  </a>
+                </div>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -110,18 +155,6 @@ function Header() {
               ? suggestion
               : "GPT is summarizing your tasks for the day..."}
           </p>
-        )}
-      </div>
-
-      <div className="flex items-center justify-center px-5 py-5 md:py-5">
-        {isAuthenticated && (
-          <button
-            title="Archived Projects"
-            onClick={openArchivedModal}
-            className="bg-green-900 opacity-65 hover:bg-gray-900 text-white font-medium py-2 px-4 rounded"
-          >
-            <BookOpenIcon className="h-4 w-4" />
-          </button>
         )}
       </div>
     </header>
