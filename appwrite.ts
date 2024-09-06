@@ -8,11 +8,6 @@ const account = new Account(client);
 const databases = new Databases(client);
 const storage = new Storage(client);
 
-const result = await account.create(
-'dcambal',
-'brucepopoyskii@gmail.com',
-'',
-'DC Ambal'
-);
 
-export { client, account, databases, storage, result, ID};
+
+export { client, account, databases, storage, ID};
