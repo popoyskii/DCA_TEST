@@ -257,6 +257,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           status: columnId,
           ...(file && { image: file }),
           ...(dataFile && { projdata: dataFile }),
+          ...(fileType && { fileType: fileType }),
           percentageUsed: 0,
         };
 
