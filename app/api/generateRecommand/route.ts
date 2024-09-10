@@ -1,3 +1,4 @@
+import { databases } from "@/appwrite";
 import openai, {
   addFile,
   checkRun,
@@ -8,7 +9,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
-    const { url } = await request.json();
+    const { url, id } = await request.json();
     console.log("Received file URL:", url);
 
     const instructions = `
@@ -45,6 +46,15 @@ export async function POST(request: Request) {
     const file = await addFile(url);
     console.log("File added:", file);
 
+    await databases.updateDocument(
+      process.env.NEXT_PUBLIC_DATABASE_ID!,
+      process.env.NEXT_PUBLIC_TODOS_COLLETION_ID!,
+      id,
+      {
+        convertedData: file.id,
+      }
+    );
+
     console.log("Creating assistant...");
     const asst = await createAssistant({
       instructions,
@@ -67,6 +77,8 @@ export async function POST(request: Request) {
     return NextResponse.json(status);
   } catch (error) {
     console.error(`[generateRecommendation] Error: ${error}`);
-    return NextResponse.json({ error: `[generateRecommendation] Error: ${error}` });
+    return NextResponse.json({
+      error: `[generateRecommendation] Error: ${error}`,
+    });
   }
 }

@@ -1,8 +1,13 @@
 import { storage } from "@/appwrite";
 
-const getProjectData = async (data: Image) => {
+export const getProjectData = async (data: ProjData) => {
   const url = storage.getFileView(data.bucketId, data.fileId);
   return url;
 };
 
-export default getProjectData;
+export const getConvertedData = async (data: ProjData) => {
+  const response = storage.getFileView(data.bucketId, data.fileId);
+  return response;
+};
+
+// export default getProjectData;

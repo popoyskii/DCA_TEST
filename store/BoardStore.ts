@@ -29,6 +29,7 @@ interface BoardState {
 
   searchString: string;
   setSearchString: (searchString: string) => void;
+  updateConvertData: (id: string, file_id: string) => void;
 
   addTask: (
     todo: string,
@@ -44,6 +45,7 @@ interface BoardState {
   setImage: (image: File | null) => void;
   setProjData: (projdata: File | null) => void;
   setFileType: (fileType: string) => void;
+  addGptRecommend: (threadId: string, msgId: string, id: string) => void;
 }
 
 export const useBoardStore = create<BoardState>((set, get) => ({
@@ -99,6 +101,10 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }
   },
 
+  updateConvertData: (id, file_id) => {
+    console.log("update Data: ", file_id, id);
+  },
+
   setBoardState: (board) => set({ board }),
 
   setFileType: (fileType) => set({ fileType }),
@@ -151,7 +157,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         todoId,
         {
           status: nextState,
-          // percentageUsed: percentageUsed,
+          percentageUsed: percentageUsed,
         }
       );
 
@@ -320,6 +326,30 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     } catch (error) {
       set({ errorMessage: "Failed to delete task", loading: false });
       toast.error("Failed to delete task");
+    }
+  },
+  addGptRecommend: async (threadId: string, msgId: string, id: string) => {
+    console.log(id, threadId);
+
+    set({ loading: true });
+    try {
+      await databases.updateDocument(
+        process.env.NEXT_PUBLIC_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_TODOS_COLLETION_ID!,
+        id,
+        {
+          threadID: threadId,
+          msgID: msgId,
+          // percentageUsed: percentageUsed,
+        }
+      );
+
+      const board = await getTodosGroupedByColumn();
+      set({ board, loading: false });
+      // toast.success("Moved to next state successfully");
+    } catch (error) {
+      set({ loading: false });
+      // toast.error("Failed to move to next state");
     }
   },
 }));

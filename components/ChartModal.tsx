@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, Fragment, useEffect } from "react";
+import { useState, Fragment, useEffect, FormEvent } from "react";
 import Markdown from "react-markdown";
 import { Dialog, DialogTitle, Transition } from "@headlessui/react";
 import getUrl from "@/lib/getUrl";
-import getProjectData from "@/lib/getProjectData";
+import { getProjectData, getConvertedData } from "@/lib/getProjectData";
 import { useChartModalStore } from "@/store/ChartModalStore";
 import { useBoardStore } from "@/store/BoardStore";
 import Image from "next/image";
 import CostChart from "./CostChart";
 import { toast } from "react-toastify";
 import { ArrowPathIcon } from "@heroicons/react/24/solid";
+import { SiOpenai } from "react-icons/si";
 
 function ChartModal() {
   const [
@@ -24,6 +25,7 @@ function ChartModal() {
     setNewTaskInput,
     setNewTaskType,
     moveToNextState,
+    addGptRecommend,
   ] = useBoardStore((state) => [
     state.addTask,
     state.image,
@@ -35,6 +37,7 @@ function ChartModal() {
     state.setNewTaskInput,
     state.setNewTaskType,
     state.moveToNextState,
+    state.addGptRecommend,
   ]);
   const [isOpen, closeChartModal, data] = useChartModalStore((state) => [
     state.isOpen,
@@ -43,9 +46,13 @@ function ChartModal() {
   ]);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [dataUrl, setDataUrl] = useState<string | null>(null);
+  const [convertedDataUrl, setConvertedDataUrl] = useState<string | null>(null);
+  const [isGenerate, setGenerate] = useState<boolean>(false);
   const [pdf, setPdf] = useState<string | null>(null);
   const [isLoading, setLoading] = useState<boolean>(false);
   const [recommand, setRecommand] = useState<string | null>(null);
+  const [percentage, setPercentage] = useState<string>("");
+  const [percent, setPercent] = useState<number | null>(null);
   const [costData, setCostData] = useState<
     { category: string; cost: number }[]
   >([]);
@@ -73,15 +80,39 @@ function ChartModal() {
         };
 
         fetchData();
+
+        console.log(data.percentageUsed);
+
+        if (data.percentageUsed === null) {
+          setPercent(0);
+        } else {
+          setPercent(data.percentageUsed);
+        }
+      }
+      if (data.convertedData) {
+        if (data.threadID && data.msgID) {
+          getGptRecommend(data.threadID, data.msgID);
+        }
       }
     }
   }, [data]);
 
-  useEffect(() => {
-    if (dataUrl) {
-      // Convert(dataUrl, data.fileType as string);
-    }
-  }, [dataUrl]);
+  const getGptRecommend = async (threadId: string, msgId: string) => {
+    const response = await fetch("/api/getGptRecommend", {
+      method: "POST",
+      body: JSON.stringify({
+        thread_id: threadId,
+        msg_id: msgId,
+      }),
+    });
+
+    const recommend = await response.json();
+    const data = recommend.content[0].text.value as string;
+    const costBreakdown = extractCostBreakdown(data);
+
+    setCostData(costBreakdown);
+    setRecommand(data);
+  };
 
   useEffect(() => {
     if (pdf) {
@@ -96,11 +127,12 @@ function ChartModal() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({ url, id: data.$id }),
     });
 
     if (response.ok) {
       const data = await response.json();
+
       const interval = setInterval(async () => {
         const runResponse = await fetch("/api/openai/run", {
           method: "POST",
@@ -129,8 +161,10 @@ function ChartModal() {
         thread_id: threadId,
       }),
     });
-    const data = await runResponse.json();
-    const message = data.data.filter((item: any) => item.role === "assistant");
+    const data1 = await runResponse.json();
+    const message = data1.data.filter((item: any) => item.role === "assistant");
+
+    addGptRecommend(threadId, message[0].id, data.$id);
 
     setRecommand(message[0].content[0].text.value);
 
@@ -162,32 +196,46 @@ function ChartModal() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ url, type, title: newTaskInput }),
+      body: JSON.stringify({ url, type }),
     });
 
-    const data = await response.json();
-    setPdf(data.pdf);
+    const convertedUrl = await response.json();
+
+    setPdf(convertedUrl.pdf);
   };
 
   const regenerateResponse = async () => {
     if (pdf) {
       toast.info("Regenerating response...");
-      getRecommand(pdf);
+      // getRecommand(pdf);
     }
   };
 
-  const handleMoveToNextState = (e: any) => {
+  const generateResponse = async (e: FormEvent) => {
+    e.preventDefault();
+    const fileType = data.fileType as string;
+
+    if (dataUrl && fileType !== "pdf") {
+      Convert(dataUrl, fileType);
+      setGenerate(true);
+    }
+  };
+
+  const handleMoveToNextState = (e: FormEvent) => {
     e.preventDefault();
     if (data) {
-      moveToNextState(data.title, "todo", 0);
+      moveToNextState(data.title, "todo", Number(percentage));
       closeModal();
     }
   };
 
   const closeModal = () => {
-    console.log("data");
     setImageUrl(null);
     setRecommand(null);
+    setDataUrl(null);
+    setGenerate(false);
+    setPercent(null);
+    setCostData([]);
     closeChartModal();
   };
 
@@ -220,9 +268,14 @@ function ChartModal() {
               <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                 <DialogTitle
                   as="h3"
-                  className="text-lg font-medium leading-6 text-gray-900 pb-2"
+                  className="text-lg font-medium leading-6 text-gray-900 pb-2 flex justify-between items-center"
                 >
-                  Project Details and Analysis
+                  <p>Project Details and Analysis</p>
+                  <p>
+                    {newTaskType !== "proposed" &&
+                      percent !== null &&
+                      `GPT %: ${percent}`}
+                  </p>
                 </DialogTitle>
 
                 <div className="mt-2">
@@ -255,22 +308,34 @@ function ChartModal() {
                     {costData.length > 0 && <CostChart data={costData} />}
                   </div>
                 )}
-
                 {!isLoading && newTaskType === "proposed" && (
-                  <div className="flex items-center">
-                    <button
-                      onClick={regenerateResponse}
-                      title="Regenerate Response"
-                      className="mt-2 mr-2 text-gray-500 hover:text-gray-700 font-bold py-2 px-2 rounded"
-                    >
-                      <ArrowPathIcon className="h-5 w-5" />
-                    </button>
-                    <button
-                      onClick={handleMoveToNextState}
-                      className="mt-2 mr-2 text-blue-500 hover:text-blue-700 font-bold py-2 px-2 rounded"
-                    >
-                      Move to To Do
-                    </button>
+                  <div className="flex justify-between items-center mt-4">
+                    <div className="flex gap-2 items-center justify-center">
+                      <input
+                        type="text"
+                        className="w-14 border outline-none px-1"
+                        value={percentage}
+                        onChange={(e) => setPercentage(e.target.value)}
+                      />
+                      <label>GPT recommendation %</label>
+                    </div>
+                    <div className="flex items-center">
+                      {dataUrl && (
+                        <button
+                          onClick={generateResponse}
+                          title="Generate Response"
+                          className="mr-2 text-gray-500 hover:text-gray-700 font-bold px-2 rounded"
+                        >
+                          <SiOpenai className="h-5 w-5" />
+                        </button>
+                      )}
+                      <button
+                        onClick={handleMoveToNextState}
+                        className="mr-2 text-blue-500 hover:text-blue-700 font-bold px-2 rounded"
+                      >
+                        Move to To Do
+                      </button>
+                    </div>
                   </div>
                 )}
               </Dialog.Panel>

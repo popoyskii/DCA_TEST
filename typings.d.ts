@@ -17,7 +17,10 @@ interface Todo {
   image?: Image;
   projdata?: ProjData;
   fileType?: string;
+  convertedData?: string;
   percentageUsed: number;
+  threadID?: string;
+  msgID?: string;
 }
 
 interface Image {
@@ -25,32 +28,31 @@ interface Image {
   fileId: string;
 }
 
-interface ProjData{
-    bucketId: string;
-    fileId: string;
+interface ProjData {
+  bucketId: string;
+  fileId: string;
 }
 
 interface User {
-    $id: string;
-    username: string;
-    password: string;
-    position: string;
-  }
+  $id: string;
+  username: string;
+  password: string;
+  position: string;
+}
 
-  interface ChartDataItem {
-    category: string;
-    cost: number;
-  }
-  
-  interface CostChartProps {
-    data: ChartDataItem[];
-  }
-  
-  interface Changelog {
-    $id: string;
-    todoId: string;
-    changes: string;
-    timestamp: string;
-    userId: string;
-  }
-  
+interface ChartDataItem {
+  category: string;
+  cost: number;
+}
+
+interface CostChartProps {
+  data: ChartDataItem[];
+}
+
+interface Changelog {
+  $id: string;
+  todoId: string;
+  changes: string;
+  timestamp: string;
+  userId: string;
+}

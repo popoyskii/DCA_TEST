@@ -24,15 +24,19 @@ export const getTodosGroupedByColumn = async () => {
       title: todo.title,
       status: todo.status,
       fileType: todo.fileType,
+      percentageUsed: todo.percentageUsed,
       // get image if only existing.
       ...(todo.image && { image: JSON.parse(todo.image) }),
       ...(todo.projdata && { projdata: JSON.parse(todo.projdata) }),
+      ...(todo.convertedData && { convertedData: todo.convertedData }),
+      ...(todo.threadID && { threadID: todo.threadID }),
+      ...(todo.msgID && { msgID: todo.msgID }),
     });
 
     return acc;
   }, new Map<TypedColumn, Column>());
 
-  const columnTypes: TypedColumn[] = ["proposed","todo", "inprogress", "done"];
+  const columnTypes: TypedColumn[] = ["proposed", "todo", "inprogress", "done"];
 
   for (const columnType of columnTypes) {
     if (!columns.get(columnType)) {
