@@ -51,7 +51,7 @@ function ChartModal() {
   const [pdf, setPdf] = useState<string | null>(null);
   const [isLoading, setLoading] = useState<boolean>(false);
   const [recommand, setRecommand] = useState<string | null>(null);
-  const [percentage, setPercentage] = useState<string>("");
+  const [percentage, setPercentage] = useState<string>("0");
   const [percent, setPercent] = useState<number | null>(null);
   const [costData, setCostData] = useState<
     { category: string; cost: number }[]
@@ -81,8 +81,6 @@ function ChartModal() {
 
         fetchData();
 
-        console.log(data.percentageUsed);
-
         if (data.percentageUsed === null) {
           setPercent(0);
         } else {
@@ -91,6 +89,8 @@ function ChartModal() {
       }
       if (data.convertedData) {
         if (data.threadID && data.msgID) {
+          console.log(data.threadID, data.msgID);
+
           getGptRecommend(data.threadID, data.msgID);
         }
       }
@@ -240,6 +240,20 @@ function ChartModal() {
     closeChartModal();
   };
 
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+
+    // Check if the input is a number
+    if (!/^\d*$/.test(inputValue)) return;
+
+    const numValue = parseInt(inputValue, 10);
+
+    // Enforce range between 0 and 100
+    if (inputValue === "" || (numValue >= 0 && numValue <= 100)) {
+      setPercentage(inputValue);
+    }
+  };
+
   return (
     <Transition appear show={isOpen} as={Fragment}>
       <Dialog as="form" className="relative z-10" onClose={closeModal}>
@@ -317,7 +331,7 @@ function ChartModal() {
                         type="text"
                         className="w-14 border outline-none px-1"
                         value={percentage}
-                        onChange={(e) => setPercentage(e.target.value)}
+                        onChange={(e) => handleInput(e)}
                       />
                       <label>GPT recommendation %</label>
                     </div>
