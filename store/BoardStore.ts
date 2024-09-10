@@ -17,7 +17,7 @@ interface BoardState {
   moveToNextState: (
     todoId: string,
     nextState: TypedColumn,
-    percentageUsed: number
+    percentageUsed?: number
   ) => void;
   newTaskInput: string;
   newTaskType: TypedColumn;
@@ -148,6 +148,8 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
 
   moveToNextState: async (todoId, nextState, percentageUsed) => {
+    console.log(todoId, percentageUsed);
+
     set({ loading: true });
     toast.info("Moving to next state...");
     try {

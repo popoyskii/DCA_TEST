@@ -224,7 +224,8 @@ function ChartModal() {
   const handleMoveToNextState = (e: FormEvent) => {
     e.preventDefault();
     if (data) {
-      moveToNextState(data.title, "todo", Number(percentage));
+      const percent = Number(percentage);
+      moveToNextState(data.$id, "todo", percent);
       closeModal();
     }
   };
@@ -273,6 +274,7 @@ function ChartModal() {
                   <p>Project Details and Analysis</p>
                   <p>
                     {newTaskType !== "proposed" &&
+                      data.projdata !== null &&
                       percent !== null &&
                       `GPT %: ${percent}`}
                   </p>
