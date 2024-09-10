@@ -12,7 +12,6 @@ import {
 import Image from "next/image";
 import Avatar from "react-avatar";
 import { useArchiveModalStore } from "@/store/ArchiveModalStore";
-import getCurrentUser from "@/lib/getCurrentUser";
 import { useChangelogModalStore } from "@/store/ChangelogModalStore";
 
 function Header() {
@@ -21,17 +20,30 @@ function Header() {
     state.searchString,
     state.setSearchString,
   ]);
+  const [openModal] = useChangelogModalStore((state) => [state.openModal]);
+  const [openArchived] = useArchiveModalStore((state) => [
+    state.openArchivedModal,
+  ]);
   const { isAuthenticated, logout } = useAuthStore();
   const [loading, setLoading] = useState<boolean>(false);
   const [suggestion, setSuggestion] = useState<string>("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [username, setUserName] = useState<string>("");
 
-  const openArchivedModal = useArchiveModalStore(
-    (state) => state.openArchivedModal
-  );
+  const openArchivedModal = () => {
+    setDropdownOpen(!dropdownOpen);
+    openArchived();
+  };
 
-  const openChangelogModal = useChangelogModalStore((state) => state.openModal);
+  const openChangelogModal = () => {
+    setDropdownOpen(!dropdownOpen);
+    openModal();
+  };
+
+  const handleLogOut = () => {
+    setDropdownOpen(!dropdownOpen);
+    logout();
+  };
 
   useEffect(() => {
     if (!isAuthenticated || board.columns.size === 0) return;
@@ -128,7 +140,7 @@ function Header() {
                   </a>
                   <a
                     href="#"
-                    onClick={logout}
+                    onClick={handleLogOut}
                     className="block px-4 py-2 text-gray-800 hover:bg-gray-200"
                   >
                     Log Out

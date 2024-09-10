@@ -8,8 +8,10 @@ import { databases } from "@/appwrite";
 function ChangelogModal() {
   const { isOpen, closeModal } = useChangelogModalStore();
   const [changelogs, setChangelogs] = useState<Changelog[]>([]);
+  const [isLoading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
+    setLoading(true);
     const fetchChangelogs = async () => {
       try {
         const changelogData = await databases.listDocuments(
@@ -31,12 +33,27 @@ function ChangelogModal() {
       } catch (error) {
         console.error("Failed to fetch changelogs:", error);
       }
+      setLoading(false);
     };
 
     if (isOpen) {
       fetchChangelogs();
     }
   }, [isOpen]);
+
+  const formatDate = (isoDate: string) => {
+    const date = new Date(isoDate);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Months are zero-indexed
+    const day = String(date.getDate()).padStart(2, "0");
+
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const seconds = String(date.getSeconds()).padStart(2, "0");
+
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
 
   return (
     <Transition show={isOpen} as={Fragment}>
@@ -65,28 +82,25 @@ function ChangelogModal() {
               leaveTo="opacity-0 scale-95"
             >
               <Dialog.Panel className="max-w-lg p-6 bg-white rounded-lg shadow-xl">
-                <Dialog.Title className="text-lg font-medium text-gray-900">
+                <Dialog.Title className="text-lg font-medium text-gray-900 uppercase tracking-[6px]">
                   Changelogs
                 </Dialog.Title>
                 <div className="mt-4 space-y-4">
-                  {changelogs.length > 0 ? (
+                  {isLoading ? (
+                    <></>
+                  ) : changelogs.length > 0 ? (
                     changelogs.map((changelog) => (
                       <div
                         key={changelog.$id}
                         className="p-4 border rounded-md"
                       >
-                        <p>
-                          <strong>Todo ID:</strong> {changelog.todoId}
+                        <p className="text-left font-semibold">
+                          {changelog.changes} "{changelog.todoId}"
                         </p>
-                        <p>
-                          <strong>Changes:</strong> {changelog.changes}
-                        </p>
-                        <p>
-                          <strong>User ID:</strong> {changelog.userId}
-                        </p>
-                        <p>
-                          <strong>Timestamp:</strong> {changelog.timestamp}
-                        </p>
+                        <div className="flex flex-row justify-between items-center min-w-80">
+                          <p>{formatDate(changelog.timestamp)}</p>
+                          <p>{changelog.userId}</p>
+                        </div>
                       </div>
                     ))
                   ) : (

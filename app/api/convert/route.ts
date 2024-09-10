@@ -9,7 +9,7 @@ interface ConvertAPIResponse {
 export async function POST(request: Request) {
   try {
     const { url, type } = await request.json();
-    const convertapi = new ConvertAPI("hFNKwVZfRCPMachh");
+    const convertapi = new ConvertAPI("secret_w3TpeKhTGWMJhe8n");
 
     if (!url || !type) {
       return NextResponse.json({ error: "Invalid input data" }, { status: 400 });
@@ -19,9 +19,6 @@ export async function POST(request: Request) {
     if (!response.ok) {
       throw new Error(`Failed to fetch file from URL: ${url}`);
     }
-
-    const arrayBuffer = await response.arrayBuffer();
-    const data = new Uint8Array(arrayBuffer);
 
     let fileType = "pdf";
 

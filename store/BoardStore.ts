@@ -1,11 +1,10 @@
-import { ID, databases, storage } from '@/appwrite';
-import { getTodosGroupedByColumn } from '@/lib/getTodosGroupedByColumn';
-import uploadData from '@/lib/uploadData';
-import uploadImage from '@/lib/uploadImage';
-import { create } from 'zustand';
-import { toast } from 'react-toastify';
-import addChangelog from '@/lib/addChangelog';
-import getCurrentUser from '@/lib/getCurrentUser';
+import { ID, databases, storage } from "@/appwrite";
+import { getTodosGroupedByColumn } from "@/lib/getTodosGroupedByColumn";
+import uploadData from "@/lib/uploadData";
+import uploadImage from "@/lib/uploadImage";
+import { create } from "zustand";
+import { toast } from "react-toastify";
+import addChangelog from "@/lib/addChangelog";
 
 interface BoardState {
   board: Board;
@@ -15,7 +14,11 @@ interface BoardState {
   getBoard: () => void;
   setBoardState: (board: Board) => void;
   updateTodoInDB: (todo: Todo, columnID: TypedColumn, changes: string) => void;
-  moveToNextState: (todoId: string, nextState: TypedColumn, percentageUsed: number) => void;
+  moveToNextState: (
+    todoId: string,
+    nextState: TypedColumn,
+    percentageUsed: number
+  ) => void;
   newTaskInput: string;
   newTaskType: TypedColumn;
   image: File | null;
@@ -50,29 +53,29 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   loading: false,
   successMessage: null,
   errorMessage: null,
-  
-  searchString: '',
-  newTaskInput: '',
+
+  searchString: "",
+  newTaskInput: "",
   setSearchString: (searchString) => set({ searchString }),
-  newTaskType: 'todo',
+  newTaskType: "todo",
   image: null,
   projdata: null,
-  fileType: '',
+  fileType: "",
 
   getBoard: async () => {
     set({ loading: true });
-    toast.info('Loading board...');
+    toast.info("Loading board...");
     try {
       const board = await getTodosGroupedByColumn();
       set({ board, loading: false });
-      toast.success('Board loaded successfully');
+      toast.success("Board loaded successfully");
     } catch (error) {
       set({ loading: false });
-      toast.error('Failed to load board');
+      toast.error("Failed to load board");
     }
   },
   archivedProjects: [],
-  
+
   archiveOldItems: async () => {
     const { board } = get();
     const doneColumn = board.columns.get("done");
@@ -91,7 +94,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         },
         archivedProjects: [...state.archivedProjects, ...archivedTodos],
       }));
-      
+
       // Optionally, you can update the database to mark these items as archived.
     }
   },
@@ -102,7 +105,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   updateTodoInDB: async (todo, columnId, changes) => {
     set({ loading: true });
-    toast.info('Updating todo...');
+    toast.info(`Updating ${columnId}...`);
     try {
       await databases.updateDocument(
         process.env.NEXT_PUBLIC_DATABASE_ID!,
@@ -113,20 +116,31 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           status: columnId,
         }
       );
-  
-      const userId = await getCurrentUser();
-      if (userId) {
-        await addChangelog(todo.$id, changes, userId);
+
+      const username = localStorage.getItem("username");
+      if (username) {
+        if (columnId === "proposed") {
+          await addChangelog(todo.title, "Moved to Propose", username);
+        }
+        if (columnId === "todo") {
+          await addChangelog(todo.title, "Moved to Todo", username);
+        }
+        if (columnId === "inprogress") {
+          await addChangelog(todo.title, "Moved to Progress", username);
+        }
+        if (columnId === "done") {
+          await addChangelog(todo.title, "Moved to done", username);
+        }
       }
-  
-      set({ successMessage: 'Todo updated successfully', loading: false });
-      toast.success('Todo updated successfully');
+
+      set({ successMessage: "Todo updated successfully", loading: false });
+      toast.success("Todo updated successfully");
     } catch (error) {
-      set({ errorMessage: 'Failed to update todo', loading: false });
-      toast.error('Failed to update todo');
+      set({ errorMessage: "Failed to update todo", loading: false });
+      toast.error("Failed to update todo");
     }
   },
-  
+
   moveToNextState: async (todoId, nextState, percentageUsed) => {
     set({ loading: true });
     toast.info("Moving to next state...");
@@ -136,13 +150,17 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         process.env.NEXT_PUBLIC_TODOS_COLLETION_ID!,
         todoId,
         {
-          status: "todo",
-          percentageUsed: percentageUsed,
+          status: nextState,
+          // percentageUsed: percentageUsed,
         }
       );
-  
+
       const board = await getTodosGroupedByColumn();
-      // set({ board, loading: false });
+      set({ board, loading: false });
+      const username = localStorage.getItem("username");
+      if (username) {
+        await addChangelog(todoId, "Move to Todo", username);
+      }
       console.log(board);
       toast.success("Moved to next state successfully");
     } catch (error) {
@@ -150,9 +168,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       toast.error("Failed to move to next state");
     }
   },
-  
-  
-  
 
   setNewTaskInput: (input: string) => set({ newTaskInput: input }),
   setNewTaskType: (columnId: TypedColumn) => set({ newTaskType: columnId }),
@@ -167,11 +182,11 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     fileType?: string
   ) => {
     set({ loading: true });
-    toast.info('Adding task...');
+    toast.info("Adding task...");
     try {
       let file: Image | undefined;
       let dataFile: ProjData | undefined;
-  
+
       if (image) {
         const fileUploaded = await uploadImage(image);
         if (fileUploaded) {
@@ -181,7 +196,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           };
         }
       }
-  
+
       if (projdata) {
         const fileUploaded = await uploadData(projdata);
         if (fileUploaded) {
@@ -191,7 +206,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           };
         }
       }
-  
+
       const { $id } = await databases.createDocument(
         process.env.NEXT_PUBLIC_DATABASE_ID!,
         process.env.NEXT_PUBLIC_TODOS_COLLETION_ID!,
@@ -204,17 +219,29 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           ...(dataFile && { projdata: JSON.stringify(dataFile) }),
         }
       );
-  
-      const userId = await getCurrentUser();
-      if (userId) {
-        await addChangelog($id, 'Task created', userId);
+
+      const username = localStorage.getItem("username");
+
+      if (username) {
+        if (columnId === "proposed") {
+          await addChangelog(todo, "Added new Propose", username);
+        }
+        if (columnId === "todo") {
+          await addChangelog(todo, "Added new Todo", username);
+        }
+        if (columnId === "inprogress") {
+          await addChangelog(todo, "Added new Progress", username);
+        }
+        if (columnId === "done") {
+          await addChangelog(todo, "Added done", username);
+        }
       }
-  
-      set({ newTaskInput: '' });
-  
+
+      set({ newTaskInput: "" });
+
       set((state) => {
         const newColumns = new Map(state.board.columns);
-  
+
         const newTodo: Todo = {
           $id,
           $createdAt: new Date().toISOString(),
@@ -224,9 +251,9 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           ...(dataFile && { projdata: dataFile }),
           percentageUsed: 0,
         };
-  
+
         const column = newColumns.get(columnId);
-  
+
         if (!column) {
           newColumns.set(columnId, {
             id: columnId,
@@ -239,48 +266,60 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           board: {
             columns: newColumns,
           },
-          successMessage: 'Task added successfully',
+          successMessage: "Task added successfully",
           loading: false,
         };
       });
-      toast.success('Task added successfully');
+      toast.success("Task added successfully");
     } catch (error) {
-      set({ errorMessage: 'Failed to add task', loading: false });
-      toast.error('Failed to add task');
+      set({ errorMessage: "Failed to add task", loading: false });
+      toast.error("Failed to add task");
     }
   },
-  
 
   deleteTask: async (taskIndex: number, todo: Todo, id: TypedColumn) => {
     set({ loading: true });
-    toast.info('Deleting task...');
+    toast.info("Deleting task...");
     try {
       const newColumns = new Map(get().board.columns);
-  
+
+      console.log(todo);
+
       newColumns.get(id)?.todos.splice(taskIndex, 1);
-  
+
       set({ board: { columns: newColumns } });
-  
+
       if (todo.image) {
         await storage.deleteFile(todo.image.bucketId, todo.image.fileId);
       }
-  
+
       await databases.deleteDocument(
         process.env.NEXT_PUBLIC_DATABASE_ID!,
         process.env.NEXT_PUBLIC_TODOS_COLLETION_ID!,
         todo.$id
       );
-  
-      const userId = await getCurrentUser();
-      if (userId) {
-        await addChangelog(todo.$id, 'Task deleted', userId);
+
+      const username = localStorage.getItem("username");
+      if (username) {
+        if (todo.status === "proposed") {
+          await addChangelog(todo.title, "Deleted Propose", username);
+        }
+        if (todo.status === "todo") {
+          await addChangelog(todo.title, "Deleted Todo", username);
+        }
+        if (todo.status === "inprogress") {
+          await addChangelog(todo.title, "Deleted Progress", username);
+        }
+        if (todo.status === "done") {
+          await addChangelog(todo.title, "Deleted done", username);
+        }
       }
-  
-      set({ successMessage: 'Task deleted successfully', loading: false });
-      toast.success('Task deleted successfully');
+
+      set({ successMessage: "Task deleted successfully", loading: false });
+      toast.success("Task deleted successfully");
     } catch (error) {
-      set({ errorMessage: 'Failed to delete task', loading: false });
-      toast.error('Failed to delete task');
+      set({ errorMessage: "Failed to delete task", loading: false });
+      toast.error("Failed to delete task");
     }
   },
-  }));
+}));

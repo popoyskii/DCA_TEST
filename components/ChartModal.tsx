@@ -79,7 +79,7 @@ function ChartModal() {
 
   useEffect(() => {
     if (dataUrl) {
-      Convert(dataUrl, data.fileType as string);
+      // Convert(dataUrl, data.fileType as string);
     }
   }, [dataUrl]);
 
@@ -176,16 +176,24 @@ function ChartModal() {
     }
   };
 
-  const handleMoveToNextState = () => {
+  const handleMoveToNextState = (e: any) => {
+    e.preventDefault();
     if (data) {
-      moveToNextState(data.$id, "todo", 0);
-      closeChartModal();
+      moveToNextState(data.title, "todo", 0);
+      closeModal();
     }
+  };
+
+  const closeModal = () => {
+    console.log("data");
+    setImageUrl(null);
+    setRecommand(null);
+    closeChartModal();
   };
 
   return (
     <Transition appear show={isOpen} as={Fragment}>
-      <Dialog as="form" className="relative z-10" onClose={closeChartModal}>
+      <Dialog as="form" className="relative z-10" onClose={closeModal}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -248,22 +256,22 @@ function ChartModal() {
                   </div>
                 )}
 
-                {!isLoading && (
-                  <>
+                {!isLoading && newTaskType === "proposed" && (
+                  <div className="flex items-center">
                     <button
                       onClick={regenerateResponse}
                       title="Regenerate Response"
-                      className="mt-2 mr-2 text-gray-500 hover:text-gray-700 font-bold py-2 px-4 rounded"
+                      className="mt-2 mr-2 text-gray-500 hover:text-gray-700 font-bold py-2 px-2 rounded"
                     >
                       <ArrowPathIcon className="h-5 w-5" />
                     </button>
                     <button
                       onClick={handleMoveToNextState}
-                      className="mt-2 mr-2 text-blue-500 hover:text-blue-700 font-bold py-2 px-4 rounded"
+                      className="mt-2 mr-2 text-blue-500 hover:text-blue-700 font-bold py-2 px-2 rounded"
                     >
                       Move to To Do
                     </button>
-                  </>
+                  </div>
                 )}
               </Dialog.Panel>
             </Transition.Child>

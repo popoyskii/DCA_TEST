@@ -18,6 +18,14 @@ export default function LoginModal() {
   };
 
   useEffect(() => {
+    const user = window.localStorage.getItem("username") as string;
+    const pass = window.localStorage.getItem("password") as string;
+    if (user) {
+      login(user, pass);
+    }
+  }, []);
+
+  useEffect(() => {
     if (successMessage) {
       toast.success(successMessage);
     }

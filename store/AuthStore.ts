@@ -1,5 +1,5 @@
-import { fetchUser } from '@/lib/fetchUser';
-import create from 'zustand';
+import { fetchUser } from "@/lib/fetchUser";
+import create from "zustand";
 
 interface AuthState {
   isAuthenticated: boolean;
@@ -21,28 +21,37 @@ export const useAuthStore = create<AuthState>((set) => ({
     try {
       // Replace this with your actual login logic
       const user = await fetchUser(username, password);
+
       if (user) {
         set({
           isAuthenticated: true,
           loading: false,
-          successMessage: 'Login successful',
+          successMessage: "Login successful",
           errorMessage: null,
         });
+        localStorage.setItem("userid", user.$id);
+        localStorage.setItem("username", user.username);
+        localStorage.setItem("password", user.password);
       } else {
         set({
           loading: false,
           successMessage: null,
-          errorMessage: 'Invalid username or password',
+          errorMessage: "Invalid username or password",
         });
       }
     } catch (error) {
       set({
         loading: false,
         successMessage: null,
-        errorMessage: 'An error occurred during login',
+        errorMessage: "An error occurred during login",
       });
     }
   },
 
-  logout: () => set({ isAuthenticated: false, successMessage: 'Logged out successfully' }),
+  logout: () => {
+    localStorage.removeItem("userid");
+    localStorage.removeItem("username");
+    localStorage.removeItem("password");
+    set({ isAuthenticated: false, successMessage: "Logged out successfully" });
+  },
 }));

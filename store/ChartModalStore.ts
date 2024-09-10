@@ -20,5 +20,17 @@ export const useChartModalStore = create<ChartModalState>()((set) => ({
   },
   setData: (data) => set({ data, isOpen: true }),
   openChartModal: () => set({ isOpen: true }),
-  closeChartModal: () => set({ isOpen: false }),
+  closeChartModal: () => {
+    set({
+      isOpen: false,
+      data: {
+        $id: "",
+        $createdAt: "",
+        title: "",
+        status: "todo",
+        fileType: "",
+        percentageUsed: 0,
+      },
+    });
+  },
 }));
