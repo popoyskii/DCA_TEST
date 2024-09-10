@@ -85,7 +85,7 @@ function ChangelogModal() {
                 <Dialog.Title className="text-lg font-medium text-gray-900 uppercase tracking-[6px]">
                   Changelogs
                 </Dialog.Title>
-                <div className="mt-4 space-y-4">
+                <div className="mt-4 space-y-4 max-h-[400px] overflow-y-scroll">
                   {isLoading ? (
                     <></>
                   ) : changelogs.length > 0 ? (
