@@ -3,14 +3,14 @@
 import { useState, Fragment, useEffect, FormEvent } from "react";
 import Markdown from "react-markdown";
 import { Dialog, DialogTitle, Transition } from "@headlessui/react";
+import DatePicker from "react-datepicker";
 import getUrl from "@/lib/getUrl";
-import { getProjectData, getConvertedData } from "@/lib/getProjectData";
+import { getProjectData } from "@/lib/getProjectData";
 import { useChartModalStore } from "@/store/ChartModalStore";
 import { useBoardStore } from "@/store/BoardStore";
 import Image from "next/image";
 import CostChart from "./CostChart";
 import { toast } from "react-toastify";
-import { ArrowPathIcon } from "@heroicons/react/24/solid";
 import { SiOpenai } from "react-icons/si";
 
 function ChartModal() {
@@ -26,6 +26,7 @@ function ChartModal() {
     setNewTaskType,
     moveToNextState,
     addGptRecommend,
+    moveToProgress,
   ] = useBoardStore((state) => [
     state.addTask,
     state.image,
@@ -38,6 +39,7 @@ function ChartModal() {
     state.setNewTaskType,
     state.moveToNextState,
     state.addGptRecommend,
+    state.moveToProgress,
   ]);
   const [isOpen, closeChartModal, data] = useChartModalStore((state) => [
     state.isOpen,
@@ -56,6 +58,8 @@ function ChartModal() {
   const [costData, setCostData] = useState<
     { category: string; cost: number }[]
   >([]);
+  const [startDate, setStartDate] = useState(undefined);
+  const [endDate, setEndDate] = useState(undefined);
 
   useEffect(() => {
     if (data) {
@@ -204,13 +208,6 @@ function ChartModal() {
     setPdf(convertedUrl.pdf);
   };
 
-  const regenerateResponse = async () => {
-    if (pdf) {
-      toast.info("Regenerating response...");
-      // getRecommand(pdf);
-    }
-  };
-
   const generateResponse = async (e: FormEvent) => {
     e.preventDefault();
     const fileType = data.fileType as string;
@@ -230,6 +227,18 @@ function ChartModal() {
     }
   };
 
+  const handleMovetoProgress = (e: FormEvent) => {
+    e.preventDefault();
+    if (startDate === undefined) {
+      toast.error("Please input start date!");
+    } else if (endDate === undefined) {
+      toast.error("Please input end date!");
+    } else {
+      moveToProgress(data.$id, startDate, endDate);
+      closeModal();
+    }
+  };
+
   const closeModal = () => {
     setImageUrl(null);
     setRecommand(null);
@@ -238,6 +247,8 @@ function ChartModal() {
     setPercent(null);
     setCostData([]);
     closeChartModal();
+    setStartDate(undefined);
+    setEndDate(undefined);
   };
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -352,6 +363,41 @@ function ChartModal() {
                         Move to To Do
                       </button>
                     </div>
+                  </div>
+                )}
+                {!isLoading && newTaskType === "todo" && (
+                  <div className="flex items-end justify-between">
+                    <div className="flex items-center gap-5">
+                      <div>
+                        <p>Start Date:</p>
+                        <DatePicker
+                          selected={startDate}
+                          onChange={(date: any) => setStartDate(date)}
+                          selectsStart
+                          startDate={startDate}
+                          endDate={endDate}
+                          className="border w-full pl-2"
+                        />
+                      </div>
+                      <div>
+                        <p>End Date:</p>
+                        <DatePicker
+                          selected={endDate}
+                          onChange={(date: any) => setEndDate(date)}
+                          selectsEnd
+                          startDate={startDate}
+                          endDate={endDate}
+                          minDate={startDate}
+                          className="border w-full pl-2"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      onClick={handleMovetoProgress}
+                      className="mr-2 text-blue-500 hover:text-blue-700 font-bold px-2 rounded"
+                    >
+                      Move to Progress
+                    </button>
                   </div>
                 )}
               </Dialog.Panel>

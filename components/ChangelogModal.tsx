@@ -29,7 +29,12 @@ function ChangelogModal() {
           })
         );
 
-        setChangelogs(mappedChangelogs);
+        // Convert to Date objects and sort
+        const sortedDates = mappedChangelogs.sort(
+          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+
+        setChangelogs(sortedDates);
       } catch (error) {
         console.error("Failed to fetch changelogs:", error);
       }

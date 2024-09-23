@@ -19,6 +19,7 @@ interface BoardState {
     nextState: TypedColumn,
     percentageUsed?: number
   ) => void;
+  moveToProgress: (todoId: string, startDate: Date, endDate: Date) => void;
   newTaskInput: string;
   newTaskType: TypedColumn;
   image: File | null;
@@ -26,6 +27,7 @@ interface BoardState {
   fileType: string;
   archiveOldItems: () => void;
   archivedProjects: Todo[];
+  completedProject: (todoId: string) => void;
 
   searchString: string;
   setSearchString: (searchString: string) => void;
@@ -177,6 +179,57 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     }
   },
 
+  moveToProgress: async (todoId, startDate, endDate) => {
+    set({ loading: true });
+    toast.info("Moving to progress state...");
+    try {
+      await databases.updateDocument(
+        process.env.NEXT_PUBLIC_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_TODOS_COLLETION_ID!,
+        todoId,
+        {
+          startDate,
+          endDate,
+          status: "inprogress",
+        }
+      );
+
+      const board = await getTodosGroupedByColumn();
+      set({ board, loading: false });
+      const username = localStorage.getItem("username");
+      if (username) {
+        await addChangelog(todoId, "Move to Progress", username);
+      }
+      console.log(board);
+      toast.success("Moved to progress status successfully");
+    } catch (error) {
+      set({ loading: false });
+      toast.error("Failed to move to progress state");
+    }
+  },
+
+  completedProject: async (todoId) => {
+    try {
+      await databases.updateDocument(
+        process.env.NEXT_PUBLIC_DATABASE_ID!,
+        process.env.NEXT_PUBLIC_TODOS_COLLETION_ID!,
+        todoId,
+        {
+          status: "done",
+        }
+      );
+
+      const board = await getTodosGroupedByColumn();
+      set({ board, loading: false });
+      const username = localStorage.getItem("username");
+      if (username) {
+        await addChangelog(todoId, "Move to Done", username);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  },
+
   setNewTaskInput: (input: string) => set({ newTaskInput: input }),
   setNewTaskType: (columnId: TypedColumn) => set({ newTaskType: columnId }),
   setImage: (image: File | null) => set({ image }),
@@ -257,6 +310,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
           status: columnId,
           ...(file && { image: file }),
           ...(dataFile && { projdata: dataFile }),
+          ...(fileType && { fileType: fileType }),
           percentageUsed: 0,
         };
 

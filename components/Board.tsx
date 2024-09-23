@@ -1,11 +1,14 @@
 "use client";
 import { useBoardStore } from "@/store/BoardStore";
 import { useAuthStore } from "@/store/AuthStore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { DragDropContext, DropResult, Droppable } from "react-beautiful-dnd";
 import Column from "./Column";
+import DateModal from "./DateModal";
 
 function Board() {
+  const [isOpen, setOpen] = useState<boolean>(false);
+  const [selectedId, setSelectedId] = useState("");
   const [
     board,
     getBoard,
@@ -15,6 +18,7 @@ function Board() {
     loading,
     successMessage,
     errorMessage,
+    completedProject,
   ] = useBoardStore((state) => [
     state.board,
     state.getBoard,
@@ -24,6 +28,7 @@ function Board() {
     state.loading,
     state.successMessage,
     state.errorMessage,
+    state.completedProject,
   ]);
   const { isAuthenticated } = useAuthStore();
 
@@ -36,8 +41,33 @@ function Board() {
   useEffect(() => {
     if (board.columns.size > 0) {
       archiveOldItems();
+      const columns = Array.from(board.columns);
+      const dataIndex = columns[2];
+      const data: Column = {
+        id: dataIndex[1].id,
+        todos: dataIndex[1].todos,
+      };
+      trackingDate(data);
     }
   }, [board, archiveOldItems]);
+
+  const trackingDate = (data: Column) => {
+    data.todos.map((item, key) => {
+      const today = new Date();
+      if (item.endDate) {
+        const dateString = item.endDate.toString();
+        const date1 = new Date(
+          dateString.replace("T", " ").replace(/\..+/, "")
+        );
+        console.log("end date: ", date1.getTime());
+        console.log("today: ", today.getTime());
+
+        if (date1.getTime() <= today.getTime()) {
+          completedProject(item.$id);
+        }
+      }
+    });
+  };
 
   if (!isAuthenticated) {
     return null; // Or you can return a message or redirect to the login page
@@ -90,27 +120,32 @@ function Board() {
       return;
     }
 
-    const newTodos = startCol.todos;
-    const [todoMoved] = newTodos.splice(source.index, 1);
+    if (startCol.id === "todo" || finishCol.id === "inprogress") {
+      const selectedId = startCol.todos[source.index].$id;
+      setSelectedId(selectedId);
+      setOpen(true);
+    } else {
+      const newTodos = startCol.todos;
+      const [todoMoved] = newTodos.splice(source.index, 1);
+      const finishTodos = Array.from(finishCol.todos);
+      finishTodos.splice(destination.index, 0, todoMoved);
 
-    const finishTodos = Array.from(finishCol.todos);
-    finishTodos.splice(destination.index, 0, todoMoved);
+      const newColumns = new Map(board.columns);
+      const newCol = {
+        id: startCol.id,
+        todos: newTodos,
+      };
 
-    const newColumns = new Map(board.columns);
-    const newCol = {
-      id: startCol.id,
-      todos: newTodos,
-    };
+      newColumns.set(startCol.id, newCol);
+      newColumns.set(finishCol.id, {
+        id: finishCol.id,
+        todos: finishTodos,
+      });
 
-    newColumns.set(startCol.id, newCol);
-    newColumns.set(finishCol.id, {
-      id: finishCol.id,
-      todos: finishTodos,
-    });
-
-    // update in DB
-    updateTodoInDB(todoMoved, finishCol.id, `Moved to ${finishCol.id}`);
-    setBoardState({ ...board, columns: newColumns });
+      // update in DB
+      updateTodoInDB(todoMoved, finishCol.id, `Moved to ${finishCol.id}`);
+      setBoardState({ ...board, columns: newColumns });
+    }
   };
 
   return (
@@ -131,6 +166,7 @@ function Board() {
             </div>
           )}
         </Droppable>
+        <DateModal isOpen={isOpen} setOpen={setOpen} selectedId={selectedId} />
       </DragDropContext>
     </>
   );

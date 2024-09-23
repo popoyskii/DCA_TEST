@@ -21,6 +21,8 @@ interface Todo {
   percentageUsed: number;
   threadID?: string;
   msgID?: string;
+  startDate?: Date;
+  endDate?: Date;
 }
 
 interface Image {

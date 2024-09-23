@@ -23,7 +23,6 @@ export const getTodosGroupedByColumn = async () => {
       $createdAt: todo.$createdAt,
       title: todo.title,
       status: todo.status,
-      fileType: todo.fileType,
       percentageUsed: todo.percentageUsed,
       // get image if only existing.
       ...(todo.image && { image: JSON.parse(todo.image) }),
@@ -31,6 +30,9 @@ export const getTodosGroupedByColumn = async () => {
       ...(todo.convertedData && { convertedData: todo.convertedData }),
       ...(todo.threadID && { threadID: todo.threadID }),
       ...(todo.msgID && { msgID: todo.msgID }),
+      ...(todo.fileType && { fileType: todo.fileType }),
+      ...(todo.startDate && { startDate: todo.startDate }),
+      ...(todo.endDate && { endDate: todo.endDate }),
     });
 
     return acc;
