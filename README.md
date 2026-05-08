@@ -1,6 +1,6 @@
 # AI-Driven Resource Allocation System for Construction Projects
 
-![System Screenshot](https://imgur.com/g4kZLo0.png) (https://imgur.com/TRbnX9W.png) (https://imgur.com/mwnAoip.png) (https://imgur.com/mwnAoip.png) (https://i.imgur.com/lm8KGHE.png)
+![System Screenshot](https://imgur.com/g4kZLo0.png)
 
 An AI-powered construction project management and resource allocation platform developed to improve operational efficiency, project coordination, and decision-making for construction environments.
 
@@ -63,12 +63,51 @@ The system aims to reduce manual analysis and support faster, data-driven decisi
 
 ```bash
 /app
- ├── page.tsx                # Main application page
- ├── api/generateSummary     # GPT communication endpoint
- ├── components              # Reusable UI components
- ├── lib                     # Utility functions and libraries
- ├── store                   # State management
- ├── typings.d.ts            # Custom interfaces and types
+ ├── api/                          # Backend API routes (AI + system logic)
+ │    ├── convert/route.ts
+ │    ├── generateRecommand/route.ts
+ │    ├── generateSummary/route.ts
+ │    ├── getGptRecommend/route.ts
+ │    ├── openai/
+ │    │     ├── GetSummary/route.ts
+ │    │     ├── Rub/route.ts
+ │
+ ├── favicon.ico
+ ├── globals.css
+ ├── layout.tsx
+ ├── page.tsx                     # Main dashboard entry point
+
+/components              # Reusable UI components
+ ├── ArchiveModal.tsx
+ ├── Board.tsx
+ ├── ChangelogList.tsx
+ ├── ChangelogModal.tsx
+ ├── ChartModal.tsx
+ ├── Column.tsx
+ ├── CostChart.tsx
+ ├── DateModal.tsx
+ ├── Header.tsx
+ ├── LoginModal.tsx
+ ├── Modal.tsx
+ ├── TaskTypeRadioGroup.tsx
+ ├── ToastProvider.tsx
+ ├── TodoCard.tsx
+ ├── UserActions.tsx
+
+/images                  # Static assets
+
+/lib                     # Core logic & utilities
+ ├── addChangelog.ts
+ ├── fetchSuggestion.ts
+ ├── fetchUser.ts
+ ├── fetchUserDetails.ts
+ ├── formatTodosForAI.ts
+ ├── getCurrentUser.ts
+ ├── getProjectData.ts
+ ├── getTodosGroupedByColumn.ts
+ ├── getUrl.ts
+ ├── uploadData.ts
+ ├── uploadImage.ts
 ```
 
 ---
@@ -83,6 +122,16 @@ The system aims to reduce manual analysis and support faster, data-driven decisi
 - Assisted in improving UX and operational workflow efficiency
 
 ---
+
+## Other Screenshots
+
+## AI Chart Live Analysis
+
+![Dashboard](https://imgur.com/TRbnX9W.png)
+
+![Changelogs] (https://imgur.com/mwnAoip.png)
+
+![Dashboard](https://i.imgur.com/lm8KGHE.png)
 
 ## Getting Started
 
@@ -108,11 +157,14 @@ http://localhost:3000
 
 ## Future Improvements
 
-- Real-time collaboration features
-- AI-based predictive analytics
-- Resource forecasting and optimization
-- Advanced reporting dashboards
-- Mobile responsiveness enhancements
+- Led the overall development and implementation of the system
+- Developed both frontend and backend functionalities using Next.js and TypeScript
+- Integrated GPT-4 APIs for AI-assisted recommendations and project summaries
+- Designed and implemented the dashboard UI and workflow system
+- Built modular API routes for AI processing and backend communication
+- Managed application state, data flow, and system architecture
+- Implemented project monitoring, task management, and reporting features
+- Handled debugging, optimization, testing, and overall system integration
 
 ---
 
