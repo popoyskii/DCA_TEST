@@ -123,13 +123,13 @@ The system aims to reduce manual analysis and support faster, data-driven decisi
 
 ---
 
-## Other Screenshots
-
 ## AI Chart Live Analysis
 
 ![Dashboard](https://imgur.com/TRbnX9W.png)
 
-![Changelogs] (https://imgur.com/mwnAoip.png)
+## Other Screenshots
+
+![Changelogs](https://imgur.com/mwnAoip.png)
 
 ![Dashboard](https://i.imgur.com/lm8KGHE.png)
 
